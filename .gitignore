@@ -1,0 +1,57 @@
+# R and RStudio files
+.Rhistory
+.RData
+.Rproj.user/
+*.Rproj
+.Rproj.user
+
+# Shiny-specific
+rsconnect/
+*.log
+
+# Session Data files
+.RData
+.Rhistory
+
+# User-specific files
+.Ruserdata
+
+# OAuth tokens
+.httr-oauth
+
+# Temporary files
+*~
+*.swp
+*.swo
+*#
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Package files
+*.tar.gz
+*.zip
+
+# IDE files
+.vscode/
+.idea/
+
+# Cache directories
+cache/
+tmp/
+temp/
+
+# Output files (if any)
+output/
+plots/
+
+# Environment variables
+.env
+.Renviron
