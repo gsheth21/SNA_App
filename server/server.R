@@ -1,3 +1,19 @@
+# Source all chapter UIs
+source(here::here("server", "overview_server.R"))
+source(here::here("server", "networks_server.R"))
+source(here::here("server", "visualization_server.R"))
+source(here::here("server", "connectivity_server.R"))
+source(here::here("server", "centrality_server.R"))
+source(here::here("server", "communities_server.R"))
+source(here::here("server", "assortativity_server.R"))
+source(here::here("server", "roles_server.R"))
+source(here::here("server", "simulation_server.R"))
+
+source(here::here("helpers", "ui_styles.R"))
+source(here::here("helpers", "ui_helpers.R"))
+source(here::here("helpers", "network_helpers.R"))
+source(here::here("helpers", "plot_helpers.R"))
+
 server <- function(input, output, session) {
   
   # Initialize reactive value for current tab
