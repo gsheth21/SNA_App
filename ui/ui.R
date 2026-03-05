@@ -12,12 +12,11 @@ source(here::here("ui", "assortativity_ui.R"))
 source(here::here("ui", "roles_ui.R"))
 source(here::here("ui", "simulation_ui.R"))
 
-source(here::here("helpers", "ui_styles.R"))
 source(here::here("helpers", "ui_helpers.R"))
 
 # Main UI definition
 ui <- dashboardPage(
-  skin = "red",  # NC State theme
+  skin = "red", 
   
   # Header
   header = create_header(),
@@ -31,8 +30,8 @@ ui <- dashboardPage(
     
     # Custom CSS and JavaScript
     tags$head(
-      get_custom_css(),
-      get_custom_javascript()
+      tags$link(rel = "stylesheet", type = "text/css", href = "styles.css"),
+      tags$script(src = "script.js")
     ),
 
     uiOutput("tab_content")

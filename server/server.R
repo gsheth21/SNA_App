@@ -9,7 +9,6 @@ source(here::here("server", "assortativity_server.R"))
 source(here::here("server", "roles_server.R"))
 source(here::here("server", "simulation_server.R"))
 
-source(here::here("helpers", "ui_styles.R"))
 source(here::here("helpers", "ui_helpers.R"))
 source(here::here("helpers", "network_helpers.R"))
 source(here::here("helpers", "plot_helpers.R"))
@@ -65,15 +64,6 @@ server <- function(input, output, session) {
       "simulation" = tagList(
         tags$div(id = "tab-simulation", class = "tab-inner", simulation_ui)
       ),
-      # "overview" = overview_ui,
-      # "networks" = networks_ui,
-      # "visualization" = visualization_ui,
-      # "connectivity" = connectivity_ui,
-      # "centrality" = centrality_ui,
-      # "communities" = communities_ui,
-      # "assortativity" = assortativity_ui,
-      # "roles" = roles_ui,
-      # "simulation" = simulation_ui,
       "about" = tagList(
         tags$div(
           id = "tab-about", 

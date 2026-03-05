@@ -6,14 +6,7 @@ load_network_data <- function(dataset_name) {
     load(data_path)
     network_obj <- get(dataset_name)
   } else {
-    # Try loading from package
-    tryCatch({
-      data(list = dataset_name, package = "intronets", envir = environment())
-      network_obj <- get(dataset_name)
-    }, error = function(e) {
-      # Create sample network if data not found
-      network_obj <- generate_sample_network()
-    })
+    print(dataset_name, " Dataset was not Found")
   }
   
   return(network_obj)

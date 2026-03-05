@@ -1,0 +1,186 @@
+/* Main Body */
+body, html {
+    height: 100vh !important;
+    width: 100vw !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Headbar */
+.main-header .logo, .sidebar-toggle { 
+    display: none !important; 
+}
+.main-header {
+    min-height: 50px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    top: 0 !important;
+    margin-left: 300px !important;
+    transition: margin-left 0.3s ease-in-out !important;
+}
+.main-header.collapsed {
+    margin-left: 0 !important;
+}
+.main-header .navbar { 
+    background-color: #CC0000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Navigation in Headbar */
+.main-header .navbar-custom-menu {
+    width: inherit;
+    display: block;
+    float: left !important;
+}
+#horizontal-nav {
+    display: flex;
+    align-items: center;
+    height: 50px;
+    margin-left: 10px;
+}
+#sidebar-toggle-button {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 15px;
+    border-radius: 5px;
+    border-color: #CC0000;
+    background-color: #CC0000;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+}
+#sidebar-toggle-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+#horizontal-nav .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 15px;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 14px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+#horizontal-nav .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+#horizontal-nav .nav-link.active {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    font-weight: bold;
+}
+
+/* Sidebar */
+.main-sidebar {
+    position: fixed !important;
+    bottom: 0 !important;
+    width: 300px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background-color: #000000;
+    transition: transform 0.3s ease-in-out !important;
+    transform: translateX(0);
+}
+.main-sidebar::-webkit-scrollbar {
+    width: 8px;
+}
+.main-sidebar::-webkit-scrollbar-track {
+    background: #000000;
+}
+.main-sidebar::-webkit-scrollbar-thumb {
+    background: #CC0000;
+    border-radius: 4px;
+}
+.main-sidebar.collapsed {
+    transform: translateX(-300px) !important;
+    overflow: hidden !important;
+}
+
+/* Elements inside Sidebar */
+.main-sidebar #logo {
+    font-weight: bold;
+    padding-left: 15px;
+}
+.main-sidebar #heading {
+    padding-left: 15px;
+    padding-bottom: 5px;
+}
+section.sidebar .shiny-input-container {
+    padding-top: 0;
+}
+.control-label {
+    font-weight: 500;
+}
+
+/* Slider Input in Visual Setting in Sidebar */
+.irs--shiny .irs-bar {
+    background: #CC0000 !important;
+    border-top: 1px solid #990000 !important;
+    border-bottom: 1px solid #990000 !important;
+}
+.irs--shiny .irs-bar-edge {
+    background: #CC0000 !important;
+    border: 1px solid #990000 !important;
+}
+.irs--shiny .irs-single {
+    background: #CC0000 !important;
+    border-color: #990000 !important;
+}
+.irs--shiny .irs-single::before {
+    border-top-color: #CC0000 !important;
+}
+.irs--shiny .irs-handle {
+    background: #CC0000 !important;
+    border-color: #990000 !important;
+}
+.irs--shiny .irs-handle:hover {
+    background: #990000 !important;
+}
+
+/* Main Content */
+.content {
+    overflow: auto !important;
+    padding: 15px !important;
+    background-color: #f4f4f4;
+    height: calc(100vh - 50px) !important;
+    margin: 0;
+}
+.content::-webkit-scrollbar {
+    width: 10px;
+}
+.content::-webkit-scrollbar-track {
+    background: #e0e0e0;
+}
+.content::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 5px;
+}
+.content-wrapper {
+    margin-left: 300px !important;
+    transition: margin-left 0.3s ease-in-out !important;
+}
+.content-wrapper.collapsed {
+    margin-left: 0 !important;
+}
+
+/* Boxes in Main Window */
+.box {
+    border-radius: 5px; 
+    margin-bottom: 20px;
+    border-color: #CC0000 !important;
+}
+
+.box-header {
+    background-color: #CC0000 !important;
+    color: #ffffff;
+}
