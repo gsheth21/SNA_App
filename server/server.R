@@ -1,8 +1,7 @@
 # Source all chapter UIs
 source(here::here("server", "overview_server.R"))
 source(here::here("server", "networks_server.R"))
-source(here::here("server", "visualization_server.R"))
-source(here::here("server", "connectivity_server.R"))
+source(here::here("server", "connectivity", "connectivity_server.R"))
 source(here::here("server", "centrality_server.R"))
 source(here::here("server", "communities_server.R"))
 source(here::here("server", "assortativity_server.R"))
@@ -28,6 +27,167 @@ server <- function(input, output, session) {
   # Debug observer
   observe({
     cat("Current tab is now:", current_tab(), "\n")
+  })
+
+  # Disable sidebar controls that don't apply to directed graphs
+  observe({
+    req(rv$igraph)
+    directed <- is_directed(rv$igraph)
+    weighted <- "weight" %in% edge_attr_names(rv$igraph)
+
+    # Bridges: undirected only
+    if (directed) shinyjs::disable("highlight_bridges") else shinyjs::enable("highlight_bridges")
+
+    # Hide arrows: directed only
+    if (directed) {
+      shinyjs::enable("hide_arrows")
+      updateCheckboxInput(session, "hide_arrows", value = FALSE)
+    } else {
+      shinyjs::disable("hide_arrows")
+      updateCheckboxInput(session, "hide_arrows", value = FALSE)
+    }
+
+    # Weight style: always show for directed (reciprocity), only if weighted for undirected
+    if (directed || weighted) {
+      shinyjs::enable("weight_style")
+      # Add reciprocity choice only for directed graphs
+      choices <- c("None (ignore weights)" = "none",
+                  "Line Width"            = "width",
+                  "Dashed vs. Solid"      = "linetype",
+                  "Color"                 = "color")
+      if (directed) choices <- c(choices, "Reciprocity" = "reciprocity")
+      updateSelectInput(session, "weight_style", choices = choices, selected = "none")
+    } else {
+      shinyjs::disable("weight_style")
+      updateSelectInput(session, "weight_style", selected = "none")
+    }
+  })
+
+  output$attribute_controls <- renderUI({
+    req(rv$igraph)
+    g     <- rv$igraph
+    attrs <- vertex_attr_names(g)
+    attrs <- attrs[!attrs %in% c("name", "na")]
+
+    if (length(attrs) == 0)
+      return(p("No node attributes available", style = "padding-left: 15px;"))
+
+    # Color: all attributes
+    color_choices <- c("None", attrs)
+
+    # Size: numeric only (scaling only meaningful for numbers)
+    numeric_attrs <- Filter(function(a) is.numeric(vertex_attr(g, a)), attrs)
+    size_choices  <- if (length(numeric_attrs) > 0) c("None", numeric_attrs) else c("None")
+
+    # Shape: categorical with <= 6 unique non-NA values only (only 6 shapes exist)
+    shape_attrs <- Filter(function(a) {
+      vals <- vertex_attr(g, a)
+      length(unique(vals[!is.na(vals)])) <= 6
+    }, attrs)
+    shape_choices <- if (length(shape_attrs) > 0) c("None", shape_attrs) else c("None")
+
+    tagList(
+      selectInput("color_attribute", "Color by Attribute:",
+                  choices = color_choices, selected = "None"),
+      selectInput("size_attribute", "Size by Attribute:",
+                  choices = size_choices, selected = "None"),
+      if (length(shape_attrs) == 0)
+        tagList(
+          tags$label("Shape by Attribute:", style = "font-weight: normal; font-size: 14px;"),
+          p(tags$small("No attributes with ≤ 6 unique values available."),
+            style = "color: #888; margin-top: 2px;")
+        )
+      else
+        selectInput("shape_attribute", "Shape by Attribute:",
+                    choices = shape_choices, selected = "None")
+    )
+  })
+
+  output$attribute_legend_ui <- renderUI({
+    req(rv$igraph)
+    g <- rv$igraph
+
+    color_attr <- input$color_attribute
+    shape_attr <- input$shape_attribute
+    size_attr  <- input$size_attribute
+
+    active <- c(
+      !is.null(color_attr) && color_attr != "None",
+      !is.null(shape_attr) && shape_attr != "None",
+      !is.null(size_attr)  && size_attr  != "None"
+    )
+    if (!any(active)) return(NULL)
+
+    ncstate_colors <- c("#CC0000", "#4156A1", "#990000", "#5E72B0",
+                        "#555555", "#777777", "#AAAAAA", "#FF3333")
+    shape_opts <- c("dot", "square", "triangle", "diamond", "star", "triangleDown")
+
+    items <- tagList()
+
+    # ── Color legend ────────────────────────────────────────────────────────────
+    if (!is.null(color_attr) && color_attr != "None") {
+      vals        <- vertex_attr(g, color_attr)
+      unique_vals <- sort(unique(vals[!is.na(vals)]))
+
+      if (is.numeric(vals) && length(unique_vals) > 8) {
+        # Continuous numeric: show range only
+        items <- tagList(items,
+          strong(paste("Color →", color_attr), style = "font-size: 11px; color: #aaa;"),
+          tags$p(tags$small(paste("Continuous —", round(min(vals, na.rm=TRUE), 2),
+                                  "to", round(max(vals, na.rm=TRUE), 2))),
+                style = "padding-left:5px; margin-bottom:6px;")
+        )
+      } else {
+        # Categorical (or low-cardinality numeric): show color swatches
+        color_map <- setNames(ncstate_colors[seq_along(unique_vals)], as.character(unique_vals))
+        items <- tagList(items,
+          strong(paste("Color →", color_attr), style = "font-size: 11px; color: #aaa;"),
+          tags$ul(style = "list-style:none; padding-left:5px; margin-bottom:6px;",
+            lapply(names(color_map), function(v) tags$li(
+              tags$span(style = paste0(
+                "display:inline-block;width:10px;height:10px;border-radius:50%;",
+                "background:", color_map[[v]], ";margin-right:6px;vertical-align:middle;"
+              )),
+              tags$small(v)
+            ))
+          )
+        )
+      }
+    }
+
+    # ── Shape legend ────────────────────────────────────────────────────────────
+    if (!is.null(shape_attr) && shape_attr != "None") {
+      vals        <- vertex_attr(g, shape_attr)
+      unique_vals <- sort(unique(vals[!is.na(vals)]))
+      shape_map   <- setNames(shape_opts[seq_along(unique_vals)], as.character(unique_vals))
+      items <- tagList(items,
+        strong(paste("Shape →", shape_attr), style = "font-size: 11px; color: #aaa;"),
+        tags$ul(style = "padding-left:15px; margin-bottom:6px;",
+          lapply(names(shape_map), function(v)
+            tags$li(tags$small(paste(v, "=", shape_map[[v]])))
+          )
+        )
+      )
+    }
+
+    # ── Size legend ─────────────────────────────────────────────────────────────
+    if (!is.null(size_attr) && size_attr != "None") {
+      vals <- vertex_attr(g, size_attr)
+      if (is.numeric(vals)) {
+        items <- tagList(items,
+          strong(paste("Size →", size_attr), style = "font-size: 11px; color: #aaa;"),
+          tags$p(tags$small(paste("Scaled from", round(min(vals, na.rm=TRUE), 2),
+                                  "to", round(max(vals, na.rm=TRUE), 2))),
+                style = "padding-left:5px; margin-bottom:6px;")
+        )
+      }
+    }
+
+    tagList(
+      hr(),
+      h4("🎨 Attribute Legend", id = "heading"),
+      div(style = "padding-left: 15px;", items)
+    )
   })
   
   # Render tab content dynamically
@@ -113,7 +273,7 @@ server <- function(input, output, session) {
     cug_observed = NULL
   )
 
-  observe({
+  observeEvent(input$dataset, {
     req(input$dataset)
     
     # Load network
@@ -125,26 +285,24 @@ server <- function(input, output, session) {
     rv$centrality_results <- list()
     rv$community_results <- NULL
     rv$selected_node <- NULL
-  })
 
-  output$attribute_controls <- renderUI({
-    req(rv$igraph)
-    
-    attrs <- vertex_attr_names(rv$igraph)
-    attrs <- attrs[attrs != "name"]
-    
-    if (length(attrs) > 0) {
-      tagList(
-        selectInput("color_attribute", "Color by Attribute:", 
-                    choices = c("None", attrs), selected = "None"),
-        selectInput("size_attribute", "Size by Attribute:", 
-                    choices = c("None", attrs), selected = "None"),
-        selectInput("shape_attribute", "Shape by Attribute:", 
-                    choices = c("None", attrs), selected = "None")
-      )
-    } else {
-      p("No node attributes available", style = "padding-left: 15px;")
-    }
+    # Reset all sidebar controls to defaults
+    updateCheckboxGroupInput(session, "layer_selection", selected = c("edges", "labels"))
+    updateSelectInput(session,  "layout",       selected = "stress")
+    updateSelectInput(session,  "node_color",   selected = "#CC0000")
+    updateSelectInput(session,  "node_shape",   selected = "dot")
+    updateSliderInput(session,  "node_size",    value = 10)
+    updateSliderInput(session,  "label_size",   value = 12)
+    updateSelectInput(session,  "edge_color",   selected = "#555555")
+    updateSelectInput(session,  "edge_style",   selected = "straight")
+    updateSliderInput(session,  "edge_width",   value = 1)
+    updateSliderInput(session,  "edge_opacity", value = 0.5)
+    updateCheckboxInput(session, "hide_arrows",          value = FALSE)
+    updateSelectInput(session,  "weight_style",  selected = "none")
+    updateCheckboxInput(session, "highlight_isolates",   value = FALSE)
+    updateCheckboxInput(session, "highlight_bridges",    value = FALSE)
+    updateCheckboxInput(session, "highlight_cutpoints",  value = FALSE)
+    updateCheckboxInput(session, "show_components",      value = FALSE)
   })
   
   # Call chapter-specific server modules

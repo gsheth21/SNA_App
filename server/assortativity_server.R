@@ -46,8 +46,8 @@ assortativity_server <- function(input, output, session, rv) {
     g <- rv$igraph
     
     # Get all edges
-    edges <- as_edgelist(g)
-    degrees <- degree(g)
+    edges <- igraph::as_edgelist(g)
+    degrees <- igraph::degree(g)
     
     # Create scatter plot: degree of source vs degree of target
     from_deg <- degrees[edges[, 1]]
@@ -71,11 +71,11 @@ assortativity_server <- function(input, output, session, rv) {
     
     # Calculate average neighbor degree for each node
     avg_neighbor_deg <- sapply(1:vcount(g), function(i) {
-      neighbors_deg <- degree(g, neighbors(g, i))
+      neighbors_deg <- igraph::degree(g, neighbors(g, i))
       if (length(neighbors_deg) > 0) mean(neighbors_deg) else 0
     })
     
-    node_deg <- degree(g)
+    node_deg <- igraph::degree(g)
     
     plot_ly(x = node_deg, y = avg_neighbor_deg, mode = "markers", type = "scatter") %>%
       add_trace(x = node_deg, y = avg_neighbor_deg, mode = "text", text = "",
@@ -171,7 +171,7 @@ assortativity_server <- function(input, output, session, rv) {
     req(rv$igraph, rv$attr_assortativity)
     g <- rv$igraph
     attr_values <- rv$attr_assortativity$values
-    edges <- as_edgelist(g)
+    edges <- igraph::as_edgelist(g)
     
     # Count connections between attribute groups
     from_attr <- attr_values[edges[, 1]]
@@ -210,7 +210,7 @@ assortativity_server <- function(input, output, session, rv) {
     g <- rv$igraph
     
     attr_values <- vertex_attr(g, input$mixing_attribute)
-    edges <- as_edgelist(g)
+    edges <- igraph::as_edgelist(g)
     
     from_attr <- attr_values[edges[, 1]]
     to_attr <- attr_values[edges[, 2]]
@@ -294,7 +294,7 @@ assortativity_server <- function(input, output, session, rv) {
     g <- rv$igraph
     
     attr_values <- as.numeric(vertex_attr(g, input$numerical_assort_attr))
-    edges <- as_edgelist(g)
+    edges <- igraph::as_edgelist(g)
     
     from_val <- attr_values[edges[, 1]]
     to_val <- attr_values[edges[, 2]]

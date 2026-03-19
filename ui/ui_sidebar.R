@@ -12,8 +12,8 @@ create_sidebar <- function() {
       "Select Dataset:",
       choices = c(
         # "High Tech Managers" = "hi_tech",
-        "Marriage Network" = "ifm"
-        # "Moreno" = "moreno",
+        "Marriage Network" = "ifm",
+        "Moreno" = "moreno"
         # "Sampson's Monks" = "sampson",
         # "Hartford Drug Users" = "drugnet",
         # "Smith & White Classic Trades" = "tradenets",
@@ -27,21 +27,26 @@ create_sidebar <- function() {
     hr(),
 
     # ============================================================
-    # SECTION 2: Network Type
+    # SECTION 2: Graph Layers
+    # Teaches: nodes -> edges -> labels layering concept
     # ============================================================
-    h4("🔗 Network Properties", id = "heading"),
+    h4("🔲 Graph Layers", id = "heading"),
     div(
       style = "padding-left: 15px;",
-      checkboxInput("directed", "Directed", value = FALSE),
-      checkboxInput("weighted", "Weighted", value = FALSE)
+      checkboxGroupInput(
+        "layer_selection",
+        NULL,
+        choices  = c("Edges" = "edges", "Labels" = "labels"),
+        selected = c("edges", "labels")
+      )
     ),
 
     hr(),
 
     # ============================================================
-    # SECTION 3: Visualization Controls
+    # SECTION 3: Layout Algorithm
     # ============================================================
-    h4("🎨 Layout Algorithm", id = "heading"),
+    h4("📐 Layout Algorithm", id = "heading"),
     selectInput(
       "layout",
       NULL,
@@ -56,30 +61,126 @@ create_sidebar <- function() {
         "MDS" = "mds",
         "Random" = "randomly"
       ),
-      selected = "fr"
+      selected = "stress"
     ),
 
     hr(),
 
-    h4("🎨 Visual Styling", id = "heading"),
-    sliderInput("node_size", "Node Size", min = 2, max = 20, value = 10, step = 1),
-    sliderInput("edge_width", "Edge Width", min = 0.5, max = 5, value = 1, step = 0.5),
-    sliderInput("node_opacity", "Node Opacity", min = 0, max = 1, value = 0.8, step = 0.1),
-    sliderInput("edge_opacity", "Edge Opacity", min = 0, max = 1, value = 0.5, step = 0.1),
-    sliderInput("label_size", "Label Size", min = 8, max = 16, value = 12, step = 1),
+    # ============================================================
+    # SECTION 4: Node Appearance
+    # Teaches: global styling vs. attribute-based (aes) mapping
+    # ============================================================
+    h4("🟡 Node Appearance", id = "heading"),
+    div(
+      style = "padding-left: 15px;",
+
+      # --- Global (static) settings ---
+      strong("Global Settings", style = "font-size: 12px; color: #aaa;"),
+      tags$br(), tags$br(),
+
+      selectInput(
+        "node_color",
+        "Node Color:",
+        choices = c(
+          "Red (NC State)"  = "#CC0000",
+          "Black"           = "#000000",
+          "Blue"            = "#1f78b4",
+          "Green"           = "#33a02c",
+          "Orange"          = "#ff7f00",
+          "Purple"          = "#6a3d9a"
+        ),
+        selected = "#CC0000"
+      ),
+      selectInput(
+        "node_shape",
+        "Node Shape:",
+        choices = c(
+          "Dot"          = "dot",
+          "Square"       = "square",
+          "Triangle"     = "triangle",
+          "Diamond"      = "diamond",
+          "Star"         = "star"
+        ),
+        selected = "dot"
+      ),
+      sliderInput("node_size",  "Node Size:",  min = 2,  max = 40, value = 10, step = 1),
+      sliderInput("label_size", "Label Size:", min = 8,  max = 24, value = 12, step = 1),
+
+      tags$br(),
+      # --- Attribute-based (aes) settings ---
+      strong("Attribute Mapping (aes)", style = "font-size: 12px; color: #aaa;"),
+      tags$br(), tags$br(),
+
+      uiOutput("attribute_controls"),
+      uiOutput("attribute_legend_ui")
+    ),
 
     hr(),
 
     # ============================================================
-    # SECTION 4: Node Attributes
+    # SECTION 5: Edge Appearance
+    # Teaches: straight vs. curved arcs, arrows, directed networks
     # ============================================================
-    h4("📈 Node Attributes", id = "heading"),
-    uiOutput("attribute_controls"),
+    h4("➡️ Edge Appearance", id = "heading"),
+    div(
+      style = "padding-left: 15px;",
+
+      selectInput(
+        "edge_color",
+        "Edge Color:",
+        choices = c(
+          "Gray"   = "#555555",
+          "Black"  = "#000000",
+          "Red"    = "#CC0000",
+          "Blue"   = "#1f78b4",
+          "Green"  = "#33a02c"
+        ),
+        selected = "#555555"
+      ),
+
+      selectInput(
+        "edge_style",
+        "Edge Style:",
+        choices  = c("Straight" = "straight", "Curved" = "curved"),
+        selected = "straight"
+      ),
+      conditionalPanel(
+        condition = "input.edge_style == 'curved'",
+        sliderInput("curve_strength", "Curve Strength:",
+                    min = 0.1, max = 1.0, value = 0.3, step = 0.1)
+      ),
+      checkboxInput("hide_arrows", "Hide Arrows", value = FALSE),
+      sliderInput("edge_width",   "Edge Width:",   min = 0.5, max = 5,   value = 1,   step = 0.5),
+      sliderInput("edge_opacity", "Edge Opacity:", min = 0.1, max = 1.0, value = 0.5, step = 0.1)
+    ),
 
     hr(),
 
     # ============================================================
-    # SECTION 5: Highlight Options
+    # SECTION 6: Edge Weights
+    # Teaches: weight = 1 per arc, collapse to undirected, sum = reciprocity
+    # ============================================================
+    h4("⚖️ Edge Weights", id = "heading"),
+    div(
+      style = "padding-left: 15px;",
+      selectInput(
+        "weight_style",
+        "Visualize Weights As:",
+        choices = c(
+          "None (ignore weights)"  = "none",
+          "Line Width"             = "width",
+          "Dashed vs. Solid"       = "linetype",
+          "Color"                  = "color",
+          "Reciprocity (directed only)"    = "reciprocity"
+        ),
+        selected = "none"
+      )
+    ),
+
+    hr(),
+
+    # ============================================================
+    # SECTION 7: Highlight Options
     # ============================================================
     h4("📈 Highlight Options", id = "heading"),
     div(
@@ -93,7 +194,7 @@ create_sidebar <- function() {
     hr(),
 
     # ============================================================
-    # SECTION 6: Simulation Controls (conditional)
+    # SECTION 8: Simulation Controls (conditional)
     # ============================================================
     conditionalPanel(
       condition = "input.current_tab == 'simulation'",

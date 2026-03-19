@@ -24,12 +24,6 @@ create_header <- function() {
         ),
         tags$a(
           class = "nav-link",
-          `data-tab` = "visualization",
-          icon("eye"),
-          "Visualization"
-        ),
-        tags$a(
-          class = "nav-link",
           `data-tab` = "connectivity",
           icon("link"),
           "Connectivity"

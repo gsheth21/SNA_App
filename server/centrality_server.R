@@ -5,6 +5,7 @@ centrality_server <- function(input, output, session, rv) {
   # ============================================================
   
   observeEvent(input$calc_degree, {
+    shinyjs::show("degree_results")
     req(rv$igraph)
     g <- ensure_igraph(rv$igraph)
     
@@ -18,6 +19,7 @@ centrality_server <- function(input, output, session, rv) {
   })
   
   output$degree_top5 <- renderUI({
+    shinyjs::show("degree_results")
     req(rv$centrality_results$degree)
     
     scores <- rv$centrality_results$degree
@@ -35,6 +37,7 @@ centrality_server <- function(input, output, session, rv) {
   })
   
   output$degree_centralization <- renderUI({
+    shinyjs::show("degree_results")
     req(rv$centrality_results$degree)
     
     cent <- centr_degree(rv$igraph)$centralization
@@ -48,6 +51,7 @@ centrality_server <- function(input, output, session, rv) {
   })
   
   output$degree_plot <- renderVisNetwork({
+    shinyjs::show("degree_results")
     req(rv$centrality_results$degree)
     req(rv$igraph)
     
@@ -65,6 +69,7 @@ centrality_server <- function(input, output, session, rv) {
   })
   
   output$degree_dist <- renderPlotly({
+    shinyjs::show("degree_results")
     req(rv$centrality_results$degree)
     
     plot_ly(x = rv$centrality_results$degree, type = "histogram") %>%
@@ -311,11 +316,11 @@ centrality_server <- function(input, output, session, rv) {
     g <- rv$igraph
     
     # Calculate all measures
-    degree_scores <- degree(g, normalized = TRUE)
-    closeness_scores <- closeness(g, normalized = TRUE)
+    degree_scores <- igraph::degree(g, normalized = TRUE)
+    closeness_scores <- igraph::closeness(g, normalized = TRUE)
     closeness_scores[is.na(closeness_scores)] <- 0
-    betweenness_scores <- betweenness(g, normalized = TRUE)
-    eigen_res <- eigen_centrality(g)
+    betweenness_scores <- igraph::betweenness(g, normalized = TRUE)
+    eigen_res <- igraph::eigen_centrality(g)
     eigenvector_scores <- eigen_res$vector
     
     rv$centrality_results$degree <- degree_scores

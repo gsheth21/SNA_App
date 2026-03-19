@@ -31,6 +31,15 @@ ensure_igraph <- function(net) {
   if (!inherits(net, "igraph")) {
     stop("Network object must be either igraph or network class")
   }
+
+  for (attr in c("vertex.names", "na")) {
+    if (attr %in% igraph::vertex_attr_names(net))
+      net <- igraph::delete_vertex_attr(net, attr)
+  }
+  for (attr in c("na")) {
+    if (attr %in% igraph::edge_attr_names(net))
+      net <- igraph::delete_edge_attr(net, attr)
+  }
   
   return(net)
 }

@@ -4,7 +4,6 @@ source(here::here("ui", "ui_sidebar.R"))
 # Source all chapter UIs
 source(here::here("ui", "overview_ui.R"))
 source(here::here("ui", "networks_ui.R"))
-source(here::here("ui", "visualization_ui.R"))
 source(here::here("ui", "connectivity_ui.R"))
 source(here::here("ui", "centrality_ui.R"))
 source(here::here("ui", "communities_ui.R"))

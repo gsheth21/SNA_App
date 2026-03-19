@@ -113,7 +113,9 @@ communities_ui <- tagList(
               width = 6,
               actionButton("find_cliques", "Find Cliques", class = "btn-primary")
             )
-          )
+          ),
+
+          uiOutput("clique_size_warning")
         )
       ),
       
@@ -177,10 +179,10 @@ communities_ui <- tagList(
           hr(),
           
           fluidRow(
-            column(
-              width = 6,
-              numericInput("k_core_level", "K-Core Level to Display:", value = 2, min = 1, max = 20)
-            ),
+            # column(
+            #   width = 6,
+            #   numericInput("k_core_level", "K-Core Level to Display:", value = 2, min = 1, max = 20)
+            # ),
             column(
               width = 6,
               actionButton("compute_kcores", "Compute K-Cores", class = "btn-primary")

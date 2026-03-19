@@ -96,11 +96,27 @@ communities_server <- function(input, output, session, rv) {
     g <- igraph::as.undirected(g)
     
     min_size <- input$min_clique_size
+    largest_clique_size <- igraph::clique_num(g)
+
+    if (min_size > largest_clique_size) {
+      rv$clique_warning <- paste0(
+        "Note: Minimum clique size (", min_size, ") exceeds the largest clique in this network (",
+        largest_clique_size, " nodes). Showing results for size ", largest_clique_size, " instead."
+      )
+      min_size <- largest_clique_size
+    } else {
+      rv$clique_warning <- NULL
+    }
     
     # Find all maximal cliques
-    all_cliques <- igraph::maximal_cliques(g, min = min_size)
+    all_cliques <- igraph::max_cliques(g, min = min_size)
     
     rv$cliques <- all_cliques
+  })
+
+  output$clique_size_warning <- renderUI({
+    req(rv$clique_warning)
+    tags$p(rv$clique_warning, style = "color: red; margin-top: 8px;")
   })
   
   output$clique_stats <- renderUI({
@@ -224,16 +240,18 @@ communities_server <- function(input, output, session, rv) {
     req(rv$kcores)
     req(rv$igraph)
     
-    g <- rv$igraph
+    g <- ensure_igraph(rv$igraph)
+    g <- igraph::as.undirected(g)
     coreness_vec <- rv$kcores
     
     vis_data <- igraph_to_visNetwork(g, input$layout)
     
     # Color by k-core level
     max_k <- max(coreness_vec)
-    colors <- colorRampPalette(c("#FF9999", "#CC0000", "#660000"))(max_k)
-    vis_data$nodes$color <- colors[coreness_vec]
-    vis_data$nodes$size <- 5 + (coreness_vec / max_k) * input$node_size
+    colors <- colorRampPalette(c("#FF9999", "#CC0000", "#660000"))(max(max_k, 1))
+    coreness_for_color <- pmax(coreness_vec, 1)
+    vis_data$nodes$color <- colors[coreness_for_color]
+    vis_data$nodes$size <- 5 + (coreness_for_color / max_k) * input$node_size
     
     visNetwork(vis_data$nodes, vis_data$edges) %>%
       visOptions(highlightNearest = TRUE) %>%
@@ -261,10 +279,12 @@ communities_server <- function(input, output, session, rv) {
   # ============================================================
   
   observeEvent(input$calculate_modularity, {
-    req(rv$community_results)
-    
-    g <- rv$igraph
-    membership_vec <- membership(rv$community_results)
+    req(rv$igraph)
+
+    if (is.null(rv$community_results)) {
+      g <- ensure_igraph(rv$igraph)
+      rv$community_results <- igraph::cluster_louvain(g)
+    }
     
     # Calculate modularity
     mod_score <- modularity(rv$community_results)

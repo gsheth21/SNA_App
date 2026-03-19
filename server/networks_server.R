@@ -1,56 +1,3 @@
-# networks_server <- function(input, output, session, rv) {
-  
-#   output$network_properties <- renderUI({
-#     req(rv$igraph)
-#     g <- rv$igraph
-    
-#     n_nodes <- vcount(g)
-#     n_edges <- ecount(g)
-#     density <- edge_density(g)
-#     is_directed <- is_directed(g)
-    
-#     tagList(
-#       tags$ul(
-#         tags$li(strong("Nodes: "), n_nodes),
-#         tags$li(strong("Edges: "), n_edges),
-#         tags$li(strong("Type: "), ifelse(is_directed, "Directed", "Undirected")),
-#         tags$li(strong("Density: "), round(density, 3))
-#       )
-#     )
-#   })
-  
-#   output$dataset_info <- renderUI({
-#     req(input$dataset)
-#     description <- get_dataset_description(input$dataset)
-#     p(description)
-#   })
-  
-#   output$data_table <- renderDT({
-#     req(rv$igraph)
-#     g <- rv$igraph
-    
-#     if (input$data_view == "Edgelist") {
-#       el <- as_edgelist(g, names = TRUE)
-#       df <- data.frame(From = el[, 1], To = el[, 2])
-#     } else if (input$data_view == "Adjacency Matrix") {
-#       adj <- as_adjacency_matrix(g, sparse = FALSE)
-#       df <- as.data.frame(adj)
-#     } else { # Nodes
-#       node_names <- V(g)$name %||% as.character(1:vcount(g))
-#       df <- data.frame(Node = node_names)
-      
-#       # Add attributes if they exist
-#       attrs <- vertex_attr_names(g)
-#       attrs <- attrs[attrs != "name"]
-#       for (attr in attrs) {
-#         df[[attr]] <- vertex_attr(g, attr)
-#       }
-#     }
-    
-#     datatable(df, options = list(pageLength = 10, scrollX = TRUE))
-#   })
-# }
-
 networks_server <- function(input, output, session, rv) {
 
   # ── Helpers inside server ──────────────────────────────────────────────────
@@ -58,6 +5,7 @@ networks_server <- function(input, output, session, rv) {
   # Detect numeric edge attributes
   get_numeric_edge_attrs <- function(g) {
     eattrs <- igraph::edge_attr_names(g)
+    eattrs <- eattrs[!eattrs %in% c("na")]
     if (length(eattrs) == 0) return(character(0))
     Filter(function(a) is.numeric(igraph::edge_attr(g, a)), eattrs)
   }
@@ -197,12 +145,25 @@ networks_server <- function(input, output, session, rv) {
   # Basic counts
   output$basic_counts_ui <- renderUI({
     req(rv$igraph)
-    g <- rv$igraph
+    g        <- rv$igraph
+    n        <- igraph::vcount(g)
+    e        <- igraph::ecount(g)
+    den      <- round(igraph::edge_density(g), 4)
+    directed <- igraph::is_directed(g)
+
+    possible <- if (directed) n * (n - 1) else n * (n - 1) / 2
+    formula  <- if (directed) "n×(n−1)" else "n×(n−1)/2"
+
     tagList(
       tags$ul(
         style = "padding-left: 18px;",
-        tags$li(tags$b("Nodes: "), igraph::vcount(g)),
-        tags$li(tags$b("Edges: "), igraph::ecount(g))
+        tags$li(tags$b("Nodes: "), n),
+        tags$li(tags$b("Edges: "), e),
+        tags$li(tags$b("Possible Edges: "), possible,
+                tags$small(paste0(" (", formula, ")"), style = "color: #888;")),
+        tags$li(tags$b("Density: "),
+                tags$span(den, style = "color: #CC0000; font-weight: bold;"),
+                tags$small(paste0(" (", e, "/", possible, ")"), style = "color: #888;"))
       )
     )
   })
@@ -271,63 +232,74 @@ networks_server <- function(input, output, session, rv) {
     }
   })
 
+  # Cache layout — only recomputes when graph or layout type changes
+  vis_base <- reactive({
+    req(rv$igraph)
+    igraph_to_visNetwork(rv$igraph, input$layout)
+  })
+
   # visNetwork plot
   output$networks_visplot <- renderVisNetwork({
     req(rv$igraph)
-    g      <- rv$igraph
-    layout <- input$networks_layout
+    g <- rv$igraph
+    vis_data <- vis_base()
 
-    # Compute layout coordinates
-    layout_fn <- switch(layout,
-      "layout_with_fr"   = igraph::layout_with_fr,
-      "layout_with_kk"   = igraph::layout_with_kk,
-      "layout_nicely"    = igraph::layout_nicely,
-      "layout_in_circle" = igraph::layout_in_circle,
-      "layout_randomly"  = igraph::layout_randomly
-    )
-    coords <- layout_fn(g)
+    # 1. Use igraph_to_visNetwork instead of inline build
+    # vis_data <- igraph_to_visNetwork(g, input$layout)
 
-    # Build nodes dataframe
-    nodes <- data.frame(
-      id    = as.integer(igraph::V(g)),
-      label = if (!is.null(igraph::V(g)$name)) igraph::V(g)$name else as.character(igraph::V(g)),
-      x     = coords[, 1] * 100,
-      y     = coords[, 2] * 100,
-      stringsAsFactors = FALSE
+    # 2. Layer selection
+    vis_data <- apply_layer_selection(vis_data, input$layer_selection)
+
+    # 3. Global node styling
+    vis_data <- apply_node_styling(vis_data,
+      node_color = input$node_color,
+      node_shape = input$node_shape,
+      node_size  = input$node_size,
+      label_size = input$label_size
     )
 
-    # Build edges dataframe
-    el <- igraph::as_edgelist(g, names = FALSE)
-    edges <- data.frame(
-      from   = el[, 1],
-      to     = el[, 2],
-      arrows = if (igraph::is_directed(g)) "to" else "",
-      stringsAsFactors = FALSE
+    # 3b. Attribute-based overrides (aes mapping)
+    if (!is.null(input$color_attribute) && input$color_attribute != "None")
+      vis_data <- color_nodes_by_attribute(vis_data, g, input$color_attribute)
+
+    if (!is.null(input$size_attribute) && input$size_attribute != "None")
+      vis_data <- size_nodes_by_attribute(vis_data, g, input$size_attribute,
+                                          min_size = input$node_size * 0.4,
+                                          max_size = input$node_size * 2.5)
+
+    if (!is.null(input$shape_attribute) && input$shape_attribute != "None")
+      vis_data <- shape_nodes_by_attribute(vis_data, g, input$shape_attribute)
+
+    # 4. Edge styling
+    edge_result <- apply_edge_styling(vis_data, g,
+      hide_arrows    = input$hide_arrows,
+      edge_color     = input$edge_color,
+      edge_width     = input$edge_width,
+      edge_opacity   = input$edge_opacity,
+      edge_style     = input$edge_style,
+      curve_strength = input$curve_strength %||% 0.3
+    )
+    vis_data <- edge_result$vis_data
+
+    # 5. Weight style
+    weight_result <- apply_weight_style(vis_data, g, input$weight_style)
+    vis_data <- weight_result$vis_data
+
+    # 6. Highlight options
+    vis_data <- apply_highlight_options(vis_data, g,
+      highlight_isolates  = input$highlight_isolates,
+      highlight_bridges   = input$highlight_bridges,
+      highlight_cutpoints = input$highlight_cutpoints,
+      show_components     = input$show_components
     )
 
-    visNetwork(nodes, edges) |>
-      visNodes(
-        color = list(
-          background = "#CC0000",
-          border     = "#800000",
-          highlight  = list(background = "#FF6666", border = "#800000")
-        ),
-        font = list(size = 14, color = "#333333")
-      ) |>
-      visEdges(
-        color  = list(color = "#888888", highlight = "#CC0000"),
-        smooth = list(enabled = TRUE, type = "dynamic")
-      ) |>
-      visPhysics(
-        solver = "forceAtlas2Based",
-        forceAtlas2Based = list(gravitationalConstant = -50)
-      ) |>
-      visInteraction(
-        dragNodes     = TRUE,
-        dragView      = TRUE,
-        zoomView      = TRUE,
-        navigationButtons = TRUE
-      ) |>
+    visNetwork(vis_data$nodes, vis_data$edges) %>%
+      visEdges(smooth = edge_result$smooth) %>%
+      visPhysics(solver = "forceAtlas2Based",
+                forceAtlas2Based = list(gravitationalConstant = -50)) %>%
+      visLayout(randomSeed = 42) %>%
+      visInteraction(dragNodes = TRUE, dragView = TRUE,
+                    zoomView = TRUE, navigationButtons = TRUE) %>%
       visOptions(highlightNearest = TRUE)
   })
 
@@ -336,7 +308,7 @@ networks_server <- function(input, output, session, rv) {
     req(rv$igraph)
     g      <- rv$igraph
     vattrs <- igraph::vertex_attr_names(g)
-    vattrs <- vattrs[vattrs != "name"]   # exclude name, shown separately
+    vattrs <- vattrs[!tolower(vattrs) %in% c("name", "na", "vertex.names")]  # exclude name, shown separately
 
     if (length(vattrs) == 0) {
       return(tags$p("No vertex attributes found.", style = "color: #888;"))
@@ -378,6 +350,7 @@ networks_server <- function(input, output, session, rv) {
     req(rv$igraph)
     g      <- rv$igraph
     eattrs <- igraph::edge_attr_names(g)
+    eattrs <- eattrs[!eattrs %in% c("na", "weight")]
 
     if (length(eattrs) == 0) {
       return(tags$p("No edge attributes found.", style = "color: #888;"))
@@ -439,24 +412,19 @@ networks_server <- function(input, output, session, rv) {
 
     # Unweighted — single binary matrix tab
     if (length(num_attrs) == 0) {
-      tabsetPanel(
-        tabPanel(
-          title = "Binary Matrix",
-          br(),
-          DTOutput("matrix_binary")
-        )
+      tagList(
+        # h4("Binary Matrix:"),
+        DTOutput("matrix_binary")
       )
     } else {
-      # One tab per numeric edge attribute
-      tab_list <- lapply(num_attrs, function(a) {
+      do.call(tagList, lapply(num_attrs, function(a) {
         output_id <- paste0("matrix_attr_", make.names(a))
-        tabPanel(
-          title = paste("Matrix:", a),
-          br(),
-          DTOutput(output_id)
+        tagList(
+          h4(paste("Matrix:", a)),
+          DTOutput(output_id),
+          br()
         )
-      })
-      do.call(tabsetPanel, tab_list)
+      }))
     }
   })
 
@@ -469,9 +437,7 @@ networks_server <- function(input, output, session, rv) {
       mat,
       options = list(
         scrollX    = TRUE,
-        scrollY    = "400px",
-        pageLength = -1,         # show all rows
-        dom        = "t"
+        pageLength = 15
       )
     )
   })
@@ -492,9 +458,7 @@ networks_server <- function(input, output, session, rv) {
           mat,
           options = list(
             scrollX    = TRUE,
-            scrollY    = "400px",
-            pageLength = -1,
-            dom        = "t"
+            pageLength = 15
           )
         )
       })

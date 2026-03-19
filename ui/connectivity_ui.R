@@ -17,11 +17,7 @@ connectivity_ui <- tagList(
           solidHeader = TRUE,
           status = "primary",
           p("A connected component is a maximal subset of nodes that are all reachable from each other."),
-          p("Identifies whether the network is one big component or broken into disconnected pieces."),
-          
-          hr(),
-          
-          actionButton("analyze_components", "Analyze Components", class = "btn-primary")
+          p("Identifies whether the network is one big component or broken into disconnected pieces.")
         )
       ),
       
@@ -144,11 +140,7 @@ connectivity_ui <- tagList(
           width = 12,
           solidHeader = TRUE,
           status = "primary",
-          p("Shortest path distances between every pair of nodes in the network."),
-          
-          hr(),
-          
-          actionButton("compute_distances", "Compute Distance Matrix", class = "btn-primary")
+          p("Shortest path distances between every pair of nodes in the network.")
         )
       ),
       

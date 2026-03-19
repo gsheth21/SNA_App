@@ -1,9 +1,6 @@
 simulation_ui <- tagList(
   # tabName = "simulation",
   
-  h2("🎲 Network Simulation"),
-  p("Generate and analyze simulated networks to understand network formation processes."),
-  
   tabBox(
     title = "Network Simulation Tools",
     width = 12,

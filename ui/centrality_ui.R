@@ -35,46 +35,51 @@ centrality_ui <- tagList(
         )
       ),
       
-      fluidRow(
-        column(
-          width = 6,
-          box(
-            title = "🥇 Top 5 Nodes by Degree",
-            width = NULL,
-            solidHeader = TRUE,
-            status = "info",
-            uiOutput("degree_top5")
-          )
-        ),
-        column(
-          width = 6,
-          box(
-            title = "📊 Centralization Score",
-            width = NULL,
-            solidHeader = TRUE,
-            status = "info",
-            uiOutput("degree_centralization")
-          )
-        )
-      ),
+      shinyjs::hidden(
+        div(
+          id = "degree_results",
+          fluidRow(
+            column(
+              width = 6,
+              box(
+                title = "🥇 Top 5 Nodes by Degree",
+                width = NULL,
+                solidHeader = TRUE,
+                status = "info",
+                uiOutput("degree_top5")
+              )
+            ),
+            column(
+              width = 6,
+              box(
+                title = "📊 Centralization Score",
+                width = NULL,
+                solidHeader = TRUE,
+                status = "info",
+                uiOutput("degree_centralization")
+              )
+            )
+          ),
       
-      fluidRow(
-        box(
-          title = "🕸️ Network Visualization (sized by degree)",
-          width = 12,
-          solidHeader = TRUE,
-          status = "info",
-          visNetworkOutput("degree_plot", height = "500px")
-        )
-      ),
-      
-      fluidRow(
-        box(
-          title = "📈 Degree Distribution",
-          width = 12,
-          solidHeader = TRUE,
-          status = "info",
-          plotlyOutput("degree_dist", height = "400px")
+          fluidRow(
+            box(
+              title = "🕸️ Network Visualization (sized by degree)",
+              width = 12,
+              solidHeader = TRUE,
+              status = "info",
+              visNetworkOutput("degree_plot", height = "500px")
+            )
+          ),
+          
+          fluidRow(
+            box(
+              title = "📈 Degree Distribution",
+              width = 12,
+              solidHeader = TRUE,
+              status = "info",
+              plotlyOutput("degree_dist", height = "400px")
+            )
+          )
         )
       )
     ),
