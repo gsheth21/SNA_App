@@ -1,31 +1,28 @@
-diameter <- function(input, output, session, rv, g, components_result) {
-  observeEvent(input$compute_diameter, {
-    req(rv$igraph)
-    g <- g()
+diameter <- function(input, output, session, rv, g, components_result, vis_base) {
+  dist_matrix <- reactive({
+    igraph::distances(g())
+  })
 
-    rv$dist_matrix <- igraph::distances(g)
-    
+  diameter_result <- reactive({
     if (components_result()$no == 1) {
-      diam <- igraph::diameter(g)
-      avg_path <- igraph::mean_distance(g)
+      diam <- igraph::diameter(g())
+      avg_path <- igraph::mean_distance(g())
     } else {
       # Only for largest component
       comp <- components_result()
       largest_comp <- which.max(comp$csize)
       nodes_in_largest <- which(comp$membership == largest_comp)
-      g_largest <- igraph::induced_subgraph(g, nodes_in_largest)
+      g_largest <- igraph::induced_subgraph(g(), nodes_in_largest)
       
       diam <- igraph::diameter(g_largest)
       avg_path <- igraph::mean_distance(g_largest)
     }
     
-    rv$diameter_result <- list(diameter = diam, avg_path = avg_path)
+    list(diameter = diam, avg_path = avg_path)
   })
   
-  output$diameter_metrics <- renderUI({
-    req(rv$diameter_result)
-    
-    result <- rv$diameter_result
+  output$diameter_metrics <- renderUI({    
+    result <- diameter_result()
     
     tagList(
       tags$ul(
@@ -37,9 +34,9 @@ diameter <- function(input, output, session, rv, g, components_result) {
   })
   
   output$path_length_stats <- renderUI({
-    req(rv$dist_matrix)
+    req(dist_matrix())
     
-    dist_mat <- rv$dist_matrix
+    dist_mat <- dist_matrix()
     finite_dist <- dist_mat[is.finite(dist_mat) & dist_mat > 0]
     
     tagList(
@@ -53,9 +50,9 @@ diameter <- function(input, output, session, rv, g, components_result) {
   })
   
   output$avg_path_length_plot <- renderPlotly({
-    req(rv$dist_matrix)
+    req(dist_matrix())
     
-    dist_mat <- rv$dist_matrix
+    dist_mat <- dist_matrix()
     finite_dist <- dist_mat[is.finite(dist_mat) & dist_mat > 0]
     
     # Create cumulative distribution

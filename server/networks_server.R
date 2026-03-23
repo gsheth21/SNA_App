@@ -285,14 +285,6 @@ networks_server <- function(input, output, session, rv) {
     weight_result <- apply_weight_style(vis_data, g, input$weight_style)
     vis_data <- weight_result$vis_data
 
-    # 6. Highlight options
-    vis_data <- apply_highlight_options(vis_data, g,
-      highlight_isolates  = input$highlight_isolates,
-      highlight_bridges   = input$highlight_bridges,
-      highlight_cutpoints = input$highlight_cutpoints,
-      show_components     = input$show_components
-    )
-
     visNetwork(vis_data$nodes, vis_data$edges) %>%
       visEdges(smooth = edge_result$smooth) %>%
       visPhysics(solver = "forceAtlas2Based",

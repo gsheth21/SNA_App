@@ -3,21 +3,22 @@ assortativity_server <- function(input, output, session, rv) {
   # ============================================================
   # DEGREE ASSORTATIVITY
   # ============================================================
-  
-  observeEvent(input$calc_degree_assort, {
+
+  g <- reactive({
     req(rv$igraph)
-    g <- ensure_igraph(rv$igraph)
-    
-    # Calculate degree assortativity
-    assort_coeff <- igraph::assortativity_degree(g)
-    
-    rv$degree_assortativity <- assort_coeff
+    ensure_igraph(rv$igraph)
+  })
+  
+  degree_assortativity <- reactive({
+    igraph::assortativity_degree(g())
+  })
+
+  vis_base <- reactive({
+    igraph_to_visNetwork(g(), input$layout)
   })
   
   output$degree_assort_result <- renderUI({
-    req(rv$degree_assortativity)
-    
-    coeff <- rv$degree_assortativity
+    coeff <- degree_assortativity()
     
     # Interpretation
     if (coeff > 0.2) {
@@ -42,12 +43,9 @@ assortativity_server <- function(input, output, session, rv) {
   })
   
   output$degree_assort_scatter <- renderPlotly({
-    req(rv$igraph)
-    g <- rv$igraph
-    
     # Get all edges
-    edges <- igraph::as_edgelist(g)
-    degrees <- igraph::degree(g)
+    edges <- igraph::as_edgelist(g(), names = FALSE)
+    degrees <- igraph::degree(g())
     
     # Create scatter plot: degree of source vs degree of target
     from_deg <- degrees[edges[, 1]]
@@ -66,16 +64,13 @@ assortativity_server <- function(input, output, session, rv) {
   })
   
   output$neighbor_degree_dist <- renderPlotly({
-    req(rv$igraph)
-    g <- rv$igraph
-    
     # Calculate average neighbor degree for each node
-    avg_neighbor_deg <- sapply(1:vcount(g), function(i) {
-      neighbors_deg <- igraph::degree(g, neighbors(g, i))
+    avg_neighbor_deg <- sapply(seq_len(igraph::vcount(g())), function(i) {
+      neighbors_deg <- igraph::degree(g(), igraph::neighbors(g(), i))
       if (length(neighbors_deg) > 0) mean(neighbors_deg) else 0
     })
     
-    node_deg <- igraph::degree(g)
+    node_deg <- igraph::degree(g())
     
     plot_ly(x = node_deg, y = avg_neighbor_deg, mode = "markers", type = "scatter") %>%
       add_trace(x = node_deg, y = avg_neighbor_deg, mode = "text", text = "",
@@ -94,8 +89,7 @@ assortativity_server <- function(input, output, session, rv) {
   # ============================================================
   
   output$assortativity_attribute_select <- renderUI({
-    req(rv$igraph)
-    attrs <- vertex_attr_names(rv$igraph)
+    attrs <- igraph::vertex_attr_names(g())
     attrs <- attrs[attrs != "name"]
     
     if (length(attrs) > 0) {
@@ -107,13 +101,12 @@ assortativity_server <- function(input, output, session, rv) {
   })
   
   observeEvent(input$calc_attr_assort, {
-    req(rv$igraph, input$assort_attribute)
-    g <- ensure_igraph(rv$igraph)
+    req(input$assort_attribute)
     
-    attr_values <- igraph::vertex_attr(g, input$assort_attribute)
+    attr_values <- igraph::vertex_attr(g(), input$assort_attribute)
     
     # Calculate assortativity for this attribute
-    assort_coeff <- igraph::assortativity(g, types = as.numeric(factor(attr_values)))
+    assort_coeff <- igraph::assortativity_nominal(g(), as.factor(attr_values))
     
     rv$attr_assortativity <- list(
       coefficient = assort_coeff,
@@ -148,30 +141,49 @@ assortativity_server <- function(input, output, session, rv) {
   })
   
   output$attr_assort_plot <- renderVisNetwork({
-    req(rv$igraph, rv$attr_assortativity)
-    g <- rv$igraph
+    req(rv$attr_assortativity)
     attr_name <- rv$attr_assortativity$attribute
     attr_values <- rv$attr_assortativity$values
     
-    vis_data <- igraph_to_visNetwork(g, input$layout)
+    vis_data <- vis_base()
     
-    # Color nodes by attribute value
-    unique_vals <- unique(attr_values)
-    colors <- rainbow(length(unique_vals))
-    color_map <- setNames(colors, unique_vals)
-    vis_data$nodes$color <- color_map[as.character(attr_values)]
-    vis_data$nodes$size <- input$node_size
-    
+    vis_data <- apply_layer_selection(vis_data, input$layer_selection)
+    vis_data <- apply_node_styling(vis_data,
+      node_color = input$node_color,
+      node_shape = input$node_shape,
+      node_size  = input$node_size,
+      label_size = input$label_size
+    )
+    # Override colors by attribute groups
+    vis_data <- color_nodes_by_attribute(vis_data, g(), attr_name)
+
+    edge_result <- apply_edge_styling(vis_data, g(),
+      hide_arrows    = input$hide_arrows,
+      edge_color     = input$edge_color,
+      edge_width     = input$edge_width,
+      edge_opacity   = input$edge_opacity,
+      edge_style     = input$edge_style,
+      curve_strength = input$curve_strength %||% 0.3
+    )
+    vis_data <- edge_result$vis_data
+
+    weight_result <- apply_weight_style(vis_data, g(), input$weight_style)
+    vis_data <- weight_result$vis_data
+
     visNetwork(vis_data$nodes, vis_data$edges) %>%
-      visOptions(highlightNearest = TRUE) %>%
-      visInteraction(navigationButtons = TRUE)
+      visEdges(smooth = edge_result$smooth) %>%
+      visPhysics(solver = "forceAtlas2Based",
+                forceAtlas2Based = list(gravitationalConstant = -50)) %>%
+      visLayout(randomSeed = 42) %>%
+      visInteraction(dragNodes = TRUE, dragView = TRUE,
+                    zoomView = TRUE, navigationButtons = TRUE) %>%
+      visOptions(highlightNearest = TRUE)
   })
   
   output$attr_connection_bar <- renderPlotly({
-    req(rv$igraph, rv$attr_assortativity)
-    g <- rv$igraph
+    req(rv$attr_assortativity)
     attr_values <- rv$attr_assortativity$values
-    edges <- igraph::as_edgelist(g)
+    edges <- igraph::as_edgelist(g(), names = FALSE)
     
     # Count connections between attribute groups
     from_attr <- attr_values[edges[, 1]]
@@ -193,8 +205,7 @@ assortativity_server <- function(input, output, session, rv) {
   # ============================================================
   
   output$mixing_attribute_select <- renderUI({
-    req(rv$igraph)
-    attrs <- vertex_attr_names(rv$igraph)
+    attrs <- igraph::vertex_attr_names(g())
     attrs <- attrs[attrs != "name"]
     
     if (length(attrs) > 0) {
@@ -206,12 +217,11 @@ assortativity_server <- function(input, output, session, rv) {
   })
   
   observeEvent(input$calc_mixing_matrix, {
-    req(rv$igraph, input$mixing_attribute)
-    g <- rv$igraph
-    
-    attr_values <- vertex_attr(g, input$mixing_attribute)
-    edges <- igraph::as_edgelist(g)
-    
+    req(input$mixing_attribute)
+
+    attr_values <- igraph::vertex_attr(g(), input$mixing_attribute)
+    edges <- igraph::as_edgelist(g(), names = FALSE)
+
     from_attr <- attr_values[edges[, 1]]
     to_attr <- attr_values[edges[, 2]]
     
@@ -268,14 +278,13 @@ assortativity_server <- function(input, output, session, rv) {
   # ============================================================
   
   output$numerical_attribute_select <- renderUI({
-    req(rv$igraph)
-    attrs <- vertex_attr_names(rv$igraph)
+    attrs <- igraph::vertex_attr_names(g())
     attrs <- attrs[attrs != "name"]
     
     # Filter to only numeric attributes
     numeric_attrs <- c()
     for (attr in attrs) {
-      values <- vertex_attr(rv$igraph, attr)
+      values <- igraph::vertex_attr(g(), attr)
       if (is.numeric(values)) {
         numeric_attrs <- c(numeric_attrs, attr)
       }
@@ -290,23 +299,24 @@ assortativity_server <- function(input, output, session, rv) {
   })
   
   observeEvent(input$calc_numerical_assort, {
-    req(rv$igraph, input$numerical_assort_attr)
-    g <- rv$igraph
+    req(input$numerical_assort_attr)
     
-    attr_values <- as.numeric(vertex_attr(g, input$numerical_assort_attr))
-    edges <- igraph::as_edgelist(g)
-    
-    from_val <- attr_values[edges[, 1]]
-    to_val <- attr_values[edges[, 2]]
+    attr_values <- as.numeric(igraph::vertex_attr(g(), input$numerical_assort_attr))
     
     # Calculate Pearson correlation
-    correlation <- cor(from_val, to_val, use = "complete.obs")
+    correlation <- igraph::assortativity(g(), attr_values)
+    
+    # Edge endpoint values kept only for the scatter plot
+    edges          <- igraph::as_edgelist(g(), names = FALSE)
+    from_val       <- attr_values[edges[, 1]]
+    to_val         <- attr_values[edges[, 2]]
+    complete_pairs <- complete.cases(from_val, to_val)
     
     rv$numerical_assortativity <- list(
       correlation = correlation,
-      attribute = input$numerical_assort_attr,
-      from = from_val,
-      to = to_val
+      attribute   = input$numerical_assort_attr,
+      from        = from_val[complete_pairs],
+      to          = to_val[complete_pairs]
     )
   })
   
@@ -331,7 +341,7 @@ assortativity_server <- function(input, output, session, rv) {
     tagList(
       h5(paste(attr_name, "Correlation:")),
       tags$ul(
-        tags$li(strong("Pearson r: "), round(corr, 4)),
+        tags$li(strong("Assortativity coefficient: "), round(corr, 4)),
         tags$li(strong("Interpretation: "), interpretation)
       )
     )

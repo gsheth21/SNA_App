@@ -1,17 +1,11 @@
-distance <- function(input, output, session, rv, g, components_result) {
-  observeEvent(input$compute_distances, {
-    req(rv$igraph)
-    g <- g()
-    
-    dist_mat <- igraph::distances(g)
-    rv$distance_matrix <- dist_mat
+distance <- function(input, output, session, rv, g, components_result, vis_base) {
+  distance_matrix <- reactive({
+    igraph::distances(g())
   })
   
+  
   output$distance_properties <- renderUI({
-    req(rv$igraph)
-    
-    g <- g()
-    dist_mat <- igraph::distances(g)
+    dist_mat <- igraph::distances(g())
     
     comp <- components_result()
     
@@ -29,11 +23,8 @@ distance <- function(input, output, session, rv, g, components_result) {
   })
   
   output$distance_heatmap <- renderPlotly({
-    req(rv$igraph, rv$distance_matrix)
-    
-    g <- g()
-    dist_mat <- rv$distance_matrix
-    node_names <- igraph::V(g)$name %||% as.character(1:igraph::vcount(g))
+    dist_mat <- distance_matrix()
+    node_names <- igraph::V(g())$name %||% as.character(1:igraph::vcount(g()))
     
     # Replace Inf with max finite value for visualization
     dist_mat_vis <- dist_mat
@@ -55,9 +46,7 @@ distance <- function(input, output, session, rv, g, components_result) {
   })
   
   output$distance_histogram <- renderPlotly({
-    req(rv$distance_matrix)
-    
-    dist_mat <- rv$distance_matrix
+    dist_mat <- distance_matrix()
     finite_dist <- dist_mat[is.finite(dist_mat) & dist_mat > 0]
     
     plot_ly(x = finite_dist, type = "histogram") %>%

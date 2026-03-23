@@ -476,7 +476,7 @@ apply_edge_styling <- function(vis_data, g,
 
   # Arrows only apply to directed graphs
   if (is_directed(g)) {
-    vis_data$edges$arrows <- if (show_arrows) "to" else ""
+    vis_data$edges$arrows <- if (!hide_arrows) "to" else ""
   }
 
   list(vis_data = vis_data, smooth = smooth)
@@ -540,72 +540,6 @@ apply_weight_style <- function(vis_data, g, weight_style = "none") {
   }
 
   list(vis_data = vis_data, g_plot = g)
-}
-
-# ── 7. Highlight options ──────────────────────────────────────────────────────
-# Bridges:            skipped for directed graphs (concept undefined)
-# Articulation points: applied to underlying undirected structure for directed graphs
-# Components:         weak components for directed, connected components for undirected
-# Isolates:           degree == 0, works for both
-#
-# Priority (highest overrides lower): cutpoints > bridges > isolates > components
-
-apply_highlight_options <- function(vis_data, g,
-                                     highlight_isolates  = FALSE,
-                                     highlight_bridges   = FALSE,
-                                     highlight_cutpoints = FALSE,
-                                     show_components     = FALSE) {
-
-  any_active <- any(highlight_isolates, highlight_bridges,
-                    highlight_cutpoints, show_components)
-  if (!any_active) return(vis_data)
-
-  n_nodes     <- nrow(vis_data$nodes)
-  n_edges     <- nrow(vis_data$edges)
-  node_colors <- rep(NA_character_, n_nodes)
-  edge_colors <- rep(NA_character_, n_edges)
-
-  if (show_components) {
-    # components() uses weak mode by default — correct for both directed and undirected
-    memb        <- igraph::components(g)$membership
-    comp_colors <- get_ncstate_colors(max(memb))
-    node_colors <- comp_colors[memb]
-  }
-
-  if (highlight_isolates) {
-    ids <- which(igraph::degree(g) == 0)
-    if (length(ids) > 0) node_colors[ids] <- "#FF7F00"
-  }
-
-  # Bridges are only defined for undirected graphs
-  if (highlight_bridges && !is_directed(g) && n_edges > 0) {
-    bridge_idx <- tryCatch(
-      as.integer(igraph::bridges(g)),
-      error = function(e) integer(0)
-    )
-    if (length(bridge_idx) > 0) edge_colors[bridge_idx] <- "#CC0000"
-  }
-
-  if (highlight_cutpoints) {
-    # For directed graphs, find articulation points of the underlying undirected graph
-    g_undirected <- if (is_directed(g)) as.undirected(g, mode = "collapse") else g
-    ids <- tryCatch(
-      as.integer(igraph::articulation_points(g_undirected)),
-      error = function(e) integer(0)
-    )
-    if (length(ids) > 0) node_colors[ids] <- "#000000"
-  }
-
-  if (!all(is.na(node_colors))) {
-    vis_data$nodes$color.background <- ifelse(is.na(node_colors), "#CCCCCC", node_colors)
-    vis_data$nodes$color.border     <- "#999999"
-  }
-
-  if (n_edges > 0 && !all(is.na(edge_colors))) {
-    vis_data$edges$color <- ifelse(is.na(edge_colors), "#DDDDDD", edge_colors)
-  }
-
-  vis_data
 }
 
 # ── 8. Plot utilities ─────────────────────────────────────────────────────────

@@ -57,44 +57,96 @@ layout_algorithms <- c(
   "grid" = "Manual/Grid"
 )
 
-# Available datasets with metadata
-available_datasets <- list(
-  ifm = list(
-    name = "Florentine Families",
-    description = "Marriage relationships between prominent Florentine families in 15th century Renaissance Italy.",
-    nodes = 16,
-    type = "undirected"
-  ),
+# Dataset registry — single source of truth for all dataset metadata
+# Each entry: label (shown in UI), file (.rda filename), objects (named list of R objects inside),
+# chapters (which tabs this dataset is compatible with)
+dataset_registry <- list(
+
   moreno = list(
-    name = "Moreno 5th Grade",
-    description = "Friendship ties among 5th grade students collected by Jacob Moreno in 1934.",
-    nodes = 33,
-    type = "directed"
+    label    = "Moreno Friendship",
+    file     = "moreno",
+    objects  = list(moreno = "Moreno Network — 33 nodes, undirected"),
+    chapters = c("overview", "networks", "connectivity", "centrality",
+                 "communities", "assortativity", "roles")
   ),
+
+  ifm = list(
+    label    = "Florentine Families Marriage",
+    file     = "ifm",
+    objects  = list(ifm = "Marriage Network — 16 nodes, undirected"),
+    chapters = c("overview", "networks", "connectivity", "centrality",
+                 "communities", "assortativity", "roles")
+  ),
+
   sampson = list(
-    name = "Sampson Monks",
-    description = "Friendship relationships among monks in a monastery.",
-    nodes = 18,
-    type = "directed"
+    label    = "Sampson's Monks",
+    file     = "sampson",
+    objects  = list(sampson = "Monks Network — 18 nodes, undirected"),
+    chapters = c("overview", "networks", "connectivity", "centrality",
+                 "communities", "assortativity", "roles")
   ),
-  drugnet = list(
-    name = "Hartford Drug Users",
-    description = "Network of drug users in Hartford, Connecticut with demographic attributes.",
-    nodes = 293,
-    type = "undirected"
-  ),
-  hi_tech = list(
-    name = "Hi-Tech Managers",
-    description = "Friendship network among managers in a high-tech company.",
-    nodes = 21,
-    type = "directed"
-  ),
+
   github = list(
-    name = "GitHub Network",
-    description = "Collaboration network from GitHub developers.",
-    nodes = NA,
-    type = "directed"
+    label    = "GitHub Collaboration",
+    file     = "github",
+    objects  = list(github = "GitHub Network — 174 nodes, undirected weighted"),
+    # roles excluded: UW networks don't fit structural equivalence analysis
+    chapters = c("overview", "networks", "connectivity", "centrality",
+                 "communities", "assortativity")
+  ),
+
+  drugnet = list(
+    label    = "Hartford Drug Users",
+    file     = "drugnet",
+    objects  = list(
+      drug_connect = "Largest Component — 193 nodes, directed",
+      drugnet      = "Full Network — 293 nodes, directed"
+    ),
+    # communities excluded: cliques/louvain hard-fail on directed graphs
+    chapters = c("overview", "networks", "connectivity", "centrality",
+                 "assortativity", "roles")
+  ),
+
+  hi_tech = list(
+    label    = "Hi-Tech Managers",
+    file     = "hi_tech",
+    objects  = list(
+      htf = "Friendship Network — 21 nodes, directed",
+      hta = "Advice Network — 21 nodes, directed",
+      htr = "Reporting Network — 21 nodes, directed (sparse)"
+    ),
+    # communities excluded: directed graph
+    chapters = c("overview", "networks", "connectivity", "centrality",
+                 "assortativity", "roles")
+  ),
+
+  tradenets = list(
+    label    = "International Trade Networks",
+    file     = "tradenets",
+    objects  = list(
+      c  = "Cement — 24 nodes, directed",
+      d  = "Diplomatic Exchange — 24 nodes, directed",
+      f  = "Food/Agriculture — 24 nodes, directed",
+      m  = "Minerals — 24 nodes, directed",
+      mg = "Metal Goods — 24 nodes, directed weighted"
+    ),
+    # communities excluded: directed graph
+    chapters = c("overview", "networks", "connectivity", "centrality",
+                 "assortativity", "roles")
   )
+)
+
+# Canonical default dataset + object for each chapter
+# Based on the book's own dataset for each chapter (starred in the mapping doc)
+chapter_defaults <- list(
+  overview      = list(dataset = "ifm",      object = "ifm"),
+  networks      = list(dataset = "hi_tech",  object = "htf"),
+  connectivity  = list(dataset = "moreno",   object = "moreno"),
+  centrality    = list(dataset = "ifm",      object = "ifm"),
+  communities   = list(dataset = "sampson",  object = "sampson"),
+  assortativity = list(dataset = "drugnet",  object = "drug_connect"),
+  roles         = list(dataset = "hi_tech",  object = "htf"),
+  simulation    = NULL
 )
 
 # Print startup message
@@ -105,5 +157,5 @@ cat("  Social Network Analysis Course (NCSU)\n")
 cat("====================================================\n")
 cat("\n")
 cat("App initialized successfully!\n")
-cat("Available datasets:", length(available_datasets), "\n")
+cat("Available datasets:", length(dataset_registry), "\n")
 cat("\n")

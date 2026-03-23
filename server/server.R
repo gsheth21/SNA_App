@@ -29,6 +29,32 @@ server <- function(input, output, session) {
     cat("Current tab is now:", current_tab(), "\n")
   })
 
+    # ── Filter dataset choices and apply chapter default when tab changes ───────
+  observeEvent(current_tab(), {
+    tab <- current_tab()
+    if (tab == "simulation") return()   # simulation generates its own networks
+
+    compatible <- Filter(function(ds) tab %in% ds$chapters, dataset_registry)
+    choices    <- setNames(names(compatible), sapply(compatible, `[[`, "label"))
+
+    # Use the chapter's canonical default if it's compatible; else first choice
+    default  <- chapter_defaults[[tab]]
+    selected <- if (!is.null(default) && default$dataset %in% choices)
+                  default$dataset
+                else
+                  unname(choices)[1]
+
+    updateSelectInput(session, "dataset", choices = choices, selected = selected)
+
+    # Pre-select the default object for multi-object datasets (e.g. hi_tech → htf)
+    if (!is.null(default) && !is.null(default$object)) {
+      ds <- dataset_registry[[selected]]
+      if (!is.null(ds) && length(ds$objects) > 1) {
+        updateSelectInput(session, "dataset_object", selected = default$object)
+      }
+    }
+  }, ignoreInit = TRUE)
+
   # Disable sidebar controls that don't apply to directed graphs
   observe({
     req(rv$igraph)
@@ -189,6 +215,20 @@ server <- function(input, output, session) {
       div(style = "padding-left: 15px;", items)
     )
   })
+
+  # ── Render the per-object sub-picker for multi-object .rda files ───────────
+  output$network_object_ui <- renderUI({
+    req(input$dataset)
+    ds <- dataset_registry[[input$dataset]]
+    if (is.null(ds) || length(ds$objects) <= 1) return(NULL)
+
+    selectInput(
+      "dataset_object",
+      "Select Network:",
+      choices  = setNames(names(ds$objects), unlist(ds$objects)),
+      selected = names(ds$objects)[1]
+    )
+  })
   
   # Render tab content dynamically
   output$tab_content <- renderUI({
@@ -270,21 +310,46 @@ server <- function(input, output, session) {
     walk_path = NULL,
     walk_frequencies = NULL,
     cug_simulations = NULL,
-    cug_observed = NULL
+    cug_observed = NULL,
+    equiv_groups   = NULL,
+    profile_dist   = NULL,
+    blockmodel_res = NULL
   )
 
-  observeEvent(input$dataset, {
+    # ── Load network when dataset family or specific object changes ─────────────
+  observeEvent(list(input$dataset, input$dataset_object), {
     req(input$dataset)
-    
-    # Load network
-    net <- load_network_data(input$dataset)
-    rv$network <- net
-    rv$igraph <- ensure_igraph(net)
-    
-    # Clear previous results when dataset changes
+    ds <- dataset_registry[[input$dataset]]
+    if (is.null(ds)) return()
+
+    # Pick the object to load; fall back to first if object picker not yet rendered
+    obj_name <- if (length(ds$objects) > 1) {
+      candidate <- input$dataset_object %||% names(ds$objects)[1]
+      if (candidate %in% names(ds$objects)) candidate else names(ds$objects)[1]
+    } else {
+      names(ds$objects)[1]
+    }
+
+    net <- tryCatch(
+      load_network_data(ds$file, obj_name),
+      error = function(e) {
+        showNotification(paste("Error loading dataset:", e$message), type = "error")
+        NULL
+      }
+    )
+    if (is.null(net)) return()
+
+    rv$igraph  <- ensure_igraph(net)
+    rv$network <- ensure_network(net)
+
+    # Clear previous analysis results
     rv$centrality_results <- list()
-    rv$community_results <- NULL
-    rv$selected_node <- NULL
+    rv$community_results  <- NULL
+    rv$selected_node      <- NULL
+
+    rv$equiv_groups   <- NULL
+    rv$profile_dist   <- NULL
+    rv$blockmodel_res <- NULL
 
     # Reset all sidebar controls to defaults
     updateCheckboxGroupInput(session, "layer_selection", selected = c("edges", "labels"))
@@ -297,18 +362,13 @@ server <- function(input, output, session) {
     updateSelectInput(session,  "edge_style",   selected = "straight")
     updateSliderInput(session,  "edge_width",   value = 1)
     updateSliderInput(session,  "edge_opacity", value = 0.5)
-    updateCheckboxInput(session, "hide_arrows",          value = FALSE)
-    updateSelectInput(session,  "weight_style",  selected = "none")
-    updateCheckboxInput(session, "highlight_isolates",   value = FALSE)
-    updateCheckboxInput(session, "highlight_bridges",    value = FALSE)
-    updateCheckboxInput(session, "highlight_cutpoints",  value = FALSE)
-    updateCheckboxInput(session, "show_components",      value = FALSE)
-  })
+    updateCheckboxInput(session, "hide_arrows",  value = FALSE)
+    updateSelectInput(session,  "weight_style", selected = "none")
+  }, ignoreInit = FALSE)
   
   # Call chapter-specific server modules
   overview_server(input, output, session, rv)
   networks_server(input, output, session, rv)
-  visualization_server(input, output, session, rv)
   connectivity_server(input, output, session, rv)
   centrality_server(input, output, session, rv)
   communities_server(input, output, session, rv)
@@ -318,7 +378,8 @@ server <- function(input, output, session) {
 
   output$download_csv <- downloadHandler(
     filename = function() {
-      paste0(input$dataset, "_edgelist_", Sys.Date(), ".csv")
+      obj <- input$dataset_object %||% input$dataset
+      paste0(obj, "_edgelist_", Sys.Date(), ".csv")
     },
     content = function(file) {
       el <- as_edgelist(rv$igraph, names = TRUE)

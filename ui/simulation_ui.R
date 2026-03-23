@@ -85,6 +85,8 @@ simulation_ui <- tagList(
             selected = "2",
             inline = TRUE
           ),
+          numericInput("random_seed", "Random Seed (for reproducibility):",
+                        value = 42, min = 1, max = 10000),
           actionButton("generate_erdos", "Generate Random Graph(s)", 
                        class = "btn-danger", icon = icon("dice"))
         )

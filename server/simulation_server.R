@@ -1,29 +1,4 @@
-simulation_server <- function(input, output, session, rv) {
-  
-  # Simulation parameters (dynamic based on model)
-  output$simulation_params <- renderUI({
-    req(input$sim_model)
-    
-    if (input$sim_model == "erdos") {
-      tagList(
-        sliderInput("sim_nodes", "Nodes:", min = 10, max = 200, value = 50, step = 5),
-        sliderInput("sim_prob", "Edge Probability:", min = 0.01, max = 0.5, value = 0.1, step = 0.01)
-      )
-    } else if (input$sim_model == "smallworld") {
-      tagList(
-        sliderInput("sim_nodes", "Nodes:", min = 20, max = 200, value = 50, step = 5),
-        sliderInput("sim_nei", "Neighbors:", min = 2, max = 10, value = 4, step = 1),
-        sliderInput("sim_rewire", "Rewiring Prob:", min = 0, max = 1, value = 0.1, step = 0.05)
-      )
-    } else if (input$sim_model == "barabasi") {
-      tagList(
-        sliderInput("sim_nodes", "Nodes:", min = 20, max = 200, value = 100, step = 10),
-        sliderInput("sim_power", "Power:", min = 0.5, max = 2.0, value = 1.0, step = 0.1),
-        sliderInput("sim_m", "Connections:", min = 1, max = 5, value = 2, step = 1)
-      )
-    }
-  })
-  
+simulation_server <- function(input, output, session, rv) {  
   # Random walk network selection
   output$rw_network_select <- renderUI({
     selectInput("rw_base_network", "Select Base Network:",

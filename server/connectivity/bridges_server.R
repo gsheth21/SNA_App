@@ -1,24 +1,19 @@
-bridges <- function(input, output, session, rv, g, components_result) {
-  observeEvent(input$find_bridges_cutpoints, {
-    req(rv$igraph)
-    g <- g()
-    g <- igraph::as.undirected(g)
-    
-    # Find bridges (articulation edges)
-    bridges_list <- igraph::bridges(g)
-    
-    # Find cutpoints (articulation points)
-    cutpoints_list <- igraph::articulation_points(g)
-    
-    rv$bridges_result <- bridges_list
-    rv$cutpoints_result <- cutpoints_list
+bridges <- function(input, output, session, rv, g, components_result, vis_base) {
+  bridges_result <- reactive({
+    g <- igraph::as.undirected(g())
+    igraph::bridges(g)
+  })
+
+  cutpoints_result <- reactive({
+    g <- igraph::as.undirected(g())
+    igraph::articulation_points(g)
   })
   
   output$bridge_stats <- renderUI({
-    req(rv$bridges_result)
+    req(bridges_result())
     
     g <- g()
-    n_bridges <- length(rv$bridges_result)
+    n_bridges <- length(bridges_result())
     n_edges <- igraph::ecount(g)
     
     tagList(
@@ -31,10 +26,10 @@ bridges <- function(input, output, session, rv, g, components_result) {
   })
   
   output$cutpoint_stats <- renderUI({
-    req(rv$cutpoints_result)
+    req(cutpoints_result())
     
     g <- g()
-    n_cutpoints <- length(rv$cutpoints_result)
+    n_cutpoints <- length(cutpoints_result())
     n_nodes <- igraph::vcount(g)
     
     tagList(
@@ -47,32 +42,60 @@ bridges <- function(input, output, session, rv, g, components_result) {
   })
   
   output$bridges_cutpoints_plot <- renderVisNetwork({
-    req(rv$igraph, rv$bridges_result, rv$cutpoints_result)
-    
-    g <- g()
-    vis_data <- igraph_to_visNetwork(g, input$layout)
-    
-    # Highlight cutpoints
-    cutpoint_ids <- rv$cutpoints_result
-    vis_data$nodes$color <- ifelse(1:igraph::vcount(g) %in% cutpoint_ids, "#FF0000", "#CCCCCC")
-    vis_data$nodes$size <- input$node_size
-    
-    # Highlight bridges
-    bridge_edges <- rv$bridges_result
-    edge_ids <- igraph::get.edge.ids(g, t(igraph::as_edgelist(g)))
-    vis_data$edges$color <- ifelse(edge_ids %in% bridge_edges, "#FF0000", "#000000")
-    vis_data$edges$width <- ifelse(edge_ids %in% bridge_edges, 3, 1)
-    
+    req(bridges_result(), cutpoints_result())
+
+    cutpoint_ids <- as.numeric(cutpoints_result())
+    bridge_ids   <- as.numeric(bridges_result())
+
+    vis_data <- vis_base()
+    vis_data <- apply_layer_selection(vis_data, input$layer_selection)
+    vis_data <- apply_node_styling(vis_data,
+      node_color = input$node_color,
+      node_shape = input$node_shape,
+      node_size  = input$node_size,
+      label_size = input$label_size
+    )
+    vis_data$nodes$color.background <- ifelse(
+      seq_len(igraph::vcount(g())) %in% cutpoint_ids, "#FF0000", "#CCCCCC"
+    )
+    vis_data$nodes$color.border <- "#000000"
+
+    edge_result <- apply_edge_styling(vis_data, g(),
+      hide_arrows    = input$hide_arrows,
+      edge_color     = input$edge_color,
+      edge_width     = input$edge_width,
+      edge_opacity   = input$edge_opacity,
+      edge_style     = input$edge_style,
+      curve_strength = input$curve_strength %||% 0.3
+    )
+    vis_data <- edge_result$vis_data
+
+    # Overlay bridge highlighting after edge styling
+    vis_data$edges$color <- ifelse(
+      seq_len(nrow(vis_data$edges)) %in% bridge_ids, "#FF0000", vis_data$edges$color
+    )
+    vis_data$edges$width <- ifelse(
+      seq_len(nrow(vis_data$edges)) %in% bridge_ids, 3, vis_data$edges$width
+    )
+
+    weight_result <- apply_weight_style(vis_data, g(), input$weight_style)
+    vis_data <- weight_result$vis_data
+
     visNetwork(vis_data$nodes, vis_data$edges) %>%
-      visOptions(highlightNearest = TRUE) %>%
-      visInteraction(navigationButtons = TRUE)
+      visEdges(smooth = edge_result$smooth) %>%
+      visPhysics(solver = "forceAtlas2Based",
+                forceAtlas2Based = list(gravitationalConstant = -50)) %>%
+      visLayout(randomSeed = 42) %>%
+      visInteraction(dragNodes = TRUE, dragView = TRUE,
+                    zoomView = TRUE, navigationButtons = TRUE) %>%
+      visOptions(highlightNearest = TRUE)
   })
   
   output$bridges_table <- renderDT({
-    req(rv$igraph, rv$bridges_result)
+    req(rv$igraph, bridges_result())
     
     g <- g()
-    bridges_ids <- rv$bridges_result
+    bridges_ids <- bridges_result()
     node_names <- igraph::V(g)$name %||% as.character(1:igraph::vcount(g))
     
     # Get edge endpoints
@@ -88,10 +111,10 @@ bridges <- function(input, output, session, rv, g, components_result) {
   })
   
   output$cutpoints_table <- renderDT({
-    req(rv$igraph, rv$cutpoints_result)
+    req(rv$igraph, cutpoints_result())
     
     g <- g()
-    cutpoint_ids <- rv$cutpoints_result
+    cutpoint_ids <- cutpoints_result()
     node_names <- igraph::V(g)$name %||% as.character(1:igraph::vcount(g))
     
     cutpoint_names <- node_names[cutpoint_ids]

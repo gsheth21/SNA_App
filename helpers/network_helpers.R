@@ -1,15 +1,17 @@
-load_network_data <- function(dataset_name) {
-  # Load .rda files from intronets package or local directory
-  data_path <- file.path("data", paste0(dataset_name, ".rda"))
-  
-  if (file.exists(data_path)) {
-    load(data_path)
-    network_obj <- get(dataset_name)
-  } else {
-    print(dataset_name, " Dataset was not Found")
-  }
-  
-  return(network_obj)
+load_network_data <- function(file_name, object_name) {
+  data_path <- file.path("data", paste0(file_name, ".rda"))
+  if (!file.exists(data_path))
+    stop(paste("Dataset file not found:", data_path))
+
+  # Load into a private env to avoid polluting global scope
+  # (drugnet.rda contains 22 objects; this keeps things clean)
+  env <- new.env(parent = emptyenv())
+  load(data_path, envir = env)
+
+  if (!exists(object_name, envir = env, inherits = FALSE))
+    stop(paste("Object", shQuote(object_name), "not found in", paste0(file_name, ".rda")))
+
+  get(object_name, envir = env, inherits = FALSE)
 }
 
 # Generate sample network (fallback)
@@ -222,4 +224,35 @@ get_main_component <- function(g) {
   comp <- components(g)
   largest_comp_id <- which.max(comp$csize)
   extract_component(g, largest_comp_id)
+}
+
+# Within-block sum of squares for elbow plot
+wcss_from_dist <- function(dist_mat, groups) {
+  total_wss <- 0
+  for (g in unique(groups)) {
+    members <- which(groups == g)
+    if (length(members) > 1) {
+      sub <- dist_mat[members, members]
+      total_wss <- total_wss + sum(sub^2) / (2 * length(members))
+    }
+  }
+  total_wss
+}
+
+# Build block boundary shapes for permuted matrix plotly heatmap
+build_block_lines <- function(boundaries, n) {
+  shapes <- list()
+  for (b in boundaries) {
+    shapes[[length(shapes) + 1]] <- list(
+      type = "line", x0 = b - 0.5, x1 = b - 0.5,
+      y0 = -0.5, y1 = n - 0.5, xref = "x", yref = "y",
+      line = list(color = "steelblue", width = 2)
+    )
+    shapes[[length(shapes) + 1]] <- list(
+      type = "line", x0 = -0.5, x1 = n - 0.5,
+      y0 = b - 0.5, y1 = b - 0.5, xref = "x", yref = "y",
+      line = list(color = "steelblue", width = 2)
+    )
+  }
+  shapes
 }

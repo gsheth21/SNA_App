@@ -22,11 +22,6 @@ assortativity_ui <- tagList(
           
           hr(),
           
-          # Button to calculate degree assortativity
-          actionButton("calc_degree_assort", "Calculate Degree Assortativity", class = "btn-primary"),
-          
-          hr(),
-          
           h5("Degree Assortativity Coefficient:"),
           uiOutput("degree_assort_result"),
           

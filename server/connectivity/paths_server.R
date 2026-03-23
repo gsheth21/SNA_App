@@ -1,4 +1,4 @@
-path <- function(input, output, session, rv, g, components_result) {
+path <- function(input, output, session, rv, g, components_result, vis_base) {
   output$path_from <- renderUI({
     req(rv$igraph)
     g <- g()
@@ -72,19 +72,55 @@ path <- function(input, output, session, rv, g, components_result) {
   })
   
   output$path_plot <- renderVisNetwork({
-    req(rv$igraph)
     req(rv$path_result)
-    
-    g <- g()
-    vis_data <- igraph_to_visNetwork(g, input$layout)
-    
+
     path_ids <- as.numeric(rv$path_result$path)
-    vis_data$nodes$color <- ifelse(vis_data$nodes$id %in% path_ids, 
-                                     "#FF6B6B", "#97C2FC")
-    vis_data$nodes$size <- input$node_size
-    
+
+    vis_data <- vis_base()
+    vis_data <- apply_layer_selection(vis_data, input$layer_selection)
+    vis_data <- apply_node_styling(vis_data,
+      node_color = input$node_color,
+      node_shape = input$node_shape,
+      node_size  = input$node_size,
+      label_size = input$label_size
+    )
+    vis_data$nodes$color.background <- ifelse(
+      vis_data$nodes$id %in% path_ids, "#FF6B6B", "#97C2FC"
+    )
+    vis_data$nodes$color.border <- "#000000"
+
+    edge_result <- apply_edge_styling(vis_data, g(),
+      hide_arrows    = input$hide_arrows,
+      edge_color     = input$edge_color,
+      edge_width     = input$edge_width,
+      edge_opacity   = input$edge_opacity,
+      edge_style     = input$edge_style,
+      curve_strength = input$curve_strength %||% 0.3
+    )
+    vis_data <- edge_result$vis_data
+
+    # Highlight edges along the shortest path
+    if (length(path_ids) >= 2) {
+      path_from <- path_ids[-length(path_ids)]
+      path_to   <- path_ids[-1]
+      on_path <- Reduce(`|`, mapply(function(f, t) {
+        (vis_data$edges$from == f & vis_data$edges$to == t) |
+        (vis_data$edges$from == t & vis_data$edges$to == f)
+      }, path_from, path_to, SIMPLIFY = FALSE))
+      vis_data$edges$color <- ifelse(on_path, "#FF6B6B", vis_data$edges$color)
+      vis_data$edges$width <- ifelse(on_path, 3, vis_data$edges$width)
+    }
+
+    weight_result <- apply_weight_style(vis_data, g(), input$weight_style)
+    vis_data <- weight_result$vis_data
+
     visNetwork(vis_data$nodes, vis_data$edges) %>%
-      visOptions(highlightNearest = TRUE) %>%
-      visInteraction(navigationButtons = TRUE)
+      visEdges(smooth = edge_result$smooth) %>%
+      visPhysics(solver = "forceAtlas2Based",
+                forceAtlas2Based = list(gravitationalConstant = -50)) %>%
+      visLayout(randomSeed = 42) %>%
+      visInteraction(dragNodes = TRUE, dragView = TRUE,
+                    zoomView = TRUE, navigationButtons = TRUE) %>%
+      visOptions(highlightNearest = TRUE)
   })
 }

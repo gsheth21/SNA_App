@@ -14,11 +14,15 @@ connectivity_server <- function(input, output, session, rv) {
   components_result <- reactive({
     igraph::components(g())
   })
+
+  vis_base <- reactive({
+    igraph_to_visNetwork(g(), input$layout)
+  })
   
-  components(input, output, session, rv, g, components_result)
-  path(input, output, session, rv, g, components_result)
-  distance(input, output, session, rv, g, components_result)
-  diameter(input, output, session, rv, g, components_result)
-  bridges(input, output, session, rv, g, components_result)
-  reachability(input, output, session, rv, g, components_result)
+  components(input, output, session, rv, g, components_result, vis_base)
+  path(input, output, session, rv, g, components_result, vis_base)
+  distance(input, output, session, rv, g, components_result, vis_base)
+  diameter(input, output, session, rv, g, components_result, vis_base)
+  bridges(input, output, session, rv, g, components_result, vis_base)
+  reachability(input, output, session, rv, g, components_result, vis_base)
 }

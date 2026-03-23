@@ -1,4 +1,4 @@
-reachability <- function(input, output, session, rv, g, components_result) {
+reachability <- function(input, output, session, rv, g, components_result, vis_base) {
   output$reachability_node_select <- renderUI({
     req(rv$igraph)
     g <- g()
@@ -58,22 +58,52 @@ reachability <- function(input, output, session, rv, g, components_result) {
   })
   
   output$reachability_plot <- renderVisNetwork({
-    req(rv$igraph, rv$reachability_result)
-    
-    g <- g()
-    dist <- rv$reachability_result$distances
+    req(rv$reachability_result)
+
+    dist      <- rv$reachability_result$distances
     source_id <- rv$reachability_result$source_id
-    
-    vis_data <- igraph_to_visNetwork(g, input$layout)
-    
-    # Color by reachability
     reachable <- is.finite(dist) & dist > 0
-    vis_data$nodes$color <- ifelse(1:igraph::vcount(g) == source_id, "#FF0000",
-                                    ifelse(reachable, "#00CC00", "#CCCCCC"))
-    vis_data$nodes$size <- input$node_size
-    
+
+    vis_data <- vis_base()
+    vis_data <- apply_layer_selection(vis_data, input$layer_selection)
+    vis_data <- apply_node_styling(vis_data,
+      node_color = input$node_color,
+      node_shape = input$node_shape,
+      node_size  = input$node_size,
+      label_size = input$label_size
+    )
+    vis_data$nodes$color.background <- ifelse(
+      seq_len(igraph::vcount(g())) == source_id, "#FF0000",
+      ifelse(reachable, "#00CC00", "#CCCCCC")
+    )
+    vis_data$nodes$color.border <- "#000000"
+
+    edge_result <- apply_edge_styling(vis_data, g(),
+      hide_arrows    = input$hide_arrows,
+      edge_color     = input$edge_color,
+      edge_width     = input$edge_width,
+      edge_opacity   = input$edge_opacity,
+      edge_style     = input$edge_style,
+      curve_strength = input$curve_strength %||% 0.3
+    )
+    vis_data <- edge_result$vis_data
+
+    # Highlight only edges directly connected to source node
+edge_from_source <- vis_data$edges$from == source_id |
+                    vis_data$edges$to   == source_id
+vis_data$edges$color <- ifelse(edge_from_source, "#FF6B6B", "#AAAAAA")
+vis_data$edges$width <- ifelse(edge_from_source, 2, 1)
+
+    weight_result <- apply_weight_style(vis_data, g(), input$weight_style)
+    vis_data <- weight_result$vis_data
+
     visNetwork(vis_data$nodes, vis_data$edges) %>%
-      visOptions(highlightNearest = TRUE) %>%
-      visInteraction(navigationButtons = TRUE)
+      visEdges(smooth = edge_result$smooth) %>%
+      visPhysics(solver = "forceAtlas2Based",
+                forceAtlas2Based = list(gravitationalConstant = -50)) %>%
+      visLayout(randomSeed = 42) %>%
+      visInteraction(dragNodes = TRUE, dragView = TRUE,
+                    zoomView = TRUE, navigationButtons = TRUE) %>%
+      visOptions(highlightNearest = TRUE)
   })
 }

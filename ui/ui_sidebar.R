@@ -10,19 +10,14 @@ create_sidebar <- function() {
     selectInput(
       "dataset",
       "Select Dataset:",
-      choices = c(
-        # "High Tech Managers" = "hi_tech",
-        "Marriage Network" = "ifm",
-        "Moreno" = "moreno"
-        # "Sampson's Monks" = "sampson",
-        # "Hartford Drug Users" = "drugnet",
-        # "Smith & White Classic Trades" = "tradenets",
-        # "GitHub Network" = "github",
-        # "General Social Survey Network" = "gss",
-        # "General Social Survey EgoNet" = "gss_ego"
-      ),
-      selected = "ifm"
+      choices = {
+        ds <- Filter(function(d) "overview" %in% d$chapters, dataset_registry)
+        setNames(names(ds), sapply(ds, `[[`, "label"))
+      },
+      selected = chapter_defaults[["overview"]]$dataset
     ),
+
+    uiOutput("network_object_ui"),
 
     hr(),
 
@@ -175,46 +170,6 @@ create_sidebar <- function() {
         ),
         selected = "none"
       )
-    ),
-
-    hr(),
-
-    # ============================================================
-    # SECTION 7: Highlight Options
-    # ============================================================
-    h4("📈 Highlight Options", id = "heading"),
-    div(
-      style = "padding-left: 15px;",
-      checkboxInput("highlight_isolates", "Highlight Isolates", value = FALSE),
-      checkboxInput("highlight_bridges", "Highlight Bridges", value = FALSE),
-      checkboxInput("highlight_cutpoints", "Highlight Cutpoints", value = FALSE),
-      checkboxInput("show_components", "Show Components", value = FALSE)
-    ),
-
-    hr(),
-
-    # ============================================================
-    # SECTION 8: Simulation Controls (conditional)
-    # ============================================================
-    conditionalPanel(
-      condition = "input.current_tab == 'simulation'",
-      h4("🎲 Network Generation", id = "heading"),
-      selectInput(
-        "sim_model",
-        "Model Type:",
-        choices = c(
-          "Erdős-Rényi Random" = "erdos",
-          "Small World" = "smallworld",
-          "Preferential Attachment" = "barabasi",
-          "Built-in Types" = "builtin",
-          "Random Walk" = "randomwalk"
-        ),
-        selected = "erdos"
-      ),
-      numericInput("random_seed", "Random Seed:", value = 123, min = 1, max = 10000),
-
-      h4("🎲 Model Parameters", id = "heading"),
-      uiOutput("simulation_params")
     )
   )
 }

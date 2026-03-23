@@ -1,18 +1,4 @@
 overview_server <- function(input, output, session, rv) {
-
-  observeEvent(input$dataset, {
-    req(input$dataset)
-    
-    # Load the network
-    network_obj <- load_network_data(input$dataset)
-    
-    # Convert to igraph if needed
-    rv$igraph <- ensure_igraph(network_obj)
-    
-    # Also store network version (for some analyses)
-    rv$network <- ensure_network(network_obj)
-  })
-  
   # Network properties display
   output$overview_properties <- renderUI({
     req(rv$igraph)

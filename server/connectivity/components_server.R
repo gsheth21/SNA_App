@@ -1,4 +1,4 @@
-components <- function(input, output, session, rv, g, components_result) {
+components <- function(input, output, session, rv, g, components_result, vis_base) {
   output$component_stats <- renderUI({
     g <- g()
     comp <- components_result()
@@ -34,21 +34,42 @@ components <- function(input, output, session, rv, g, components_result) {
   })
   
   output$components_plot <- renderVisNetwork({
-    req(rv$igraph)
-    
-    g <- g()
     comp <- components_result()
-    
-    colors <- rainbow(comp$no)
-    node_colors <- colors[comp$membership]
-    
-    vis_data <- igraph_to_visNetwork(g, input$layout)
-    vis_data$nodes$color <- node_colors
-    vis_data$nodes$size <- input$node_size
-    
+
+    colors <- get_ncstate_colors(comp$no)
+
+    vis_data <- igraph_to_visNetwork(g(), input$layout)
+    vis_data <- apply_layer_selection(vis_data, input$layer_selection)
+    vis_data <- apply_node_styling(vis_data,
+      node_color = input$node_color,
+      node_shape = input$node_shape,
+      node_size  = input$node_size,
+      label_size = input$label_size
+    )
+    vis_data$nodes$color.background <- colors[comp$membership]
+    vis_data$nodes$group            <- as.character(comp$membership)
+
+    edge_result <- apply_edge_styling(vis_data, g(),
+      hide_arrows    = input$hide_arrows,
+      edge_color     = input$edge_color,
+      edge_width     = input$edge_width,
+      edge_opacity   = input$edge_opacity,
+      edge_style     = input$edge_style,
+      curve_strength = input$curve_strength %||% 0.3
+    )
+    vis_data <- edge_result$vis_data
+
+    weight_result <- apply_weight_style(vis_data, g(), input$weight_style)
+    vis_data <- weight_result$vis_data
+
     visNetwork(vis_data$nodes, vis_data$edges) %>%
-      visOptions(highlightNearest = TRUE) %>%
-      visInteraction(navigationButtons = TRUE)
+      visEdges(smooth = edge_result$smooth) %>%
+      visPhysics(solver = "forceAtlas2Based",
+                forceAtlas2Based = list(gravitationalConstant = -50)) %>%
+      visLayout(randomSeed = 42) %>%
+      visInteraction(dragNodes = TRUE, dragView = TRUE,
+                    zoomView = TRUE, navigationButtons = TRUE) %>%
+      visOptions(highlightNearest = TRUE)
   })
   
   output$component_membership_table <- renderDT({

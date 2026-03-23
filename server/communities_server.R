@@ -1,4 +1,13 @@
 communities_server <- function(input, output, session, rv) {
+
+  g <- reactive({
+    req(rv$igraph)
+    igraph::as.undirected(ensure_igraph(rv$igraph))
+  })
+
+  vis_base <- reactive({
+    igraph_to_visNetwork(g(), input$layout)
+  })
   
   # ============================================================
   # COMMUNITY DETECTION
@@ -57,17 +66,47 @@ communities_server <- function(input, output, session, rv) {
     
     g <- rv$igraph
     membership <- membership(rv$community_results)
-    
-    vis_data <- igraph_to_visNetwork(g, input$layout)
-    
     colors <- rainbow(max(membership))
-    vis_data$nodes$color <- colors[membership]
-    vis_data$nodes$group <- membership
-    vis_data$nodes$size <- input$node_size
     
+    vis_data <- vis_base()
+
+    # 2. Layer selection
+    vis_data <- apply_layer_selection(vis_data, input$layer_selection)
+
+    # 3. Global node styling
+    vis_data <- apply_node_styling(vis_data,
+      node_color = input$node_color,
+      node_shape = input$node_shape,
+      node_size  = input$node_size,
+      label_size = input$label_size
+    )
+    # Override base color with community colors
+    vis_data$nodes$color.background <- colors[membership]
+    vis_data$nodes$group            <- as.character(membership)
+
+    # 4. Edge styling
+    edge_result <- apply_edge_styling(vis_data, g(),
+      hide_arrows    = input$hide_arrows,
+      edge_color     = input$edge_color,
+      edge_width     = input$edge_width,
+      edge_opacity   = input$edge_opacity,
+      edge_style     = input$edge_style,
+      curve_strength = input$curve_strength %||% 0.3
+    )
+    vis_data <- edge_result$vis_data
+
+    # 5. Weight style
+    weight_result <- apply_weight_style(vis_data, g(), input$weight_style)
+    vis_data <- weight_result$vis_data
+
     visNetwork(vis_data$nodes, vis_data$edges) %>%
-      visOptions(highlightNearest = TRUE) %>%
-      visInteraction(navigationButtons = TRUE)
+      visEdges(smooth = edge_result$smooth) %>%
+      visPhysics(solver = "forceAtlas2Based",
+                forceAtlas2Based = list(gravitationalConstant = -50)) %>%
+      visLayout(randomSeed = 42) %>%
+      visInteraction(dragNodes = TRUE, dragView = TRUE,
+                    zoomView = TRUE, navigationButtons = TRUE) %>%
+      visOptions(highlightNearest = TRUE)
   })
   
   output$community_membership_table <- renderDT({
@@ -92,11 +131,9 @@ communities_server <- function(input, output, session, rv) {
   
   observeEvent(input$find_cliques, {
     req(rv$igraph, input$min_clique_size)
-    g <- ensure_igraph(rv$igraph)
-    g <- igraph::as.undirected(g)
     
     min_size <- input$min_clique_size
-    largest_clique_size <- igraph::clique_num(g)
+    largest_clique_size <- igraph::clique_num(g())
 
     if (min_size > largest_clique_size) {
       rv$clique_warning <- paste0(
@@ -109,7 +146,7 @@ communities_server <- function(input, output, session, rv) {
     }
     
     # Find all maximal cliques
-    all_cliques <- igraph::max_cliques(g, min = min_size)
+    all_cliques <- igraph::max_cliques(g(), min = min_size)
     
     rv$cliques <- all_cliques
   })
@@ -153,63 +190,74 @@ communities_server <- function(input, output, session, rv) {
     
     node_names <- V(rv$igraph)$name %||% as.character(1:vcount(rv$igraph))
     
-    clique_list <- lapply(1:min(10, length(rv$cliques)), function(i) {
-      clique <- rv$cliques[[i]]
-      clique_nodes <- node_names[clique]
-      data.frame(
-        Clique_ID = i,
-        Size = length(clique),
-        Nodes = paste(clique_nodes, collapse = ", ")
-      )
-    })
-    
-    df <- do.call(rbind, clique_list)
+    df <- data.frame(
+      Clique_ID = seq_along(rv$cliques),
+      Size      = lengths(rv$cliques),
+      Nodes     = sapply(rv$cliques, function(cl) paste(node_names[cl], collapse = ", "))
+    )
+    df <- df[order(-df$Size), ]
     
     datatable(df, options = list(pageLength = 10, scrollX = TRUE))
   })
   
   output$cliques_plot <- renderVisNetwork({
     req(rv$cliques)
-    req(rv$igraph)
-    
-    g <- rv$igraph
-    vis_data <- igraph_to_visNetwork(g, input$layout)
-    
-    # Color nodes in largest clique differently
-    if (length(rv$cliques) > 0) {
-      largest_clique <- rv$cliques[[which.max(sapply(rv$cliques, length))]]
-      clique_color <- ifelse(1:vcount(g) %in% largest_clique, "#CC0000", "#CCCCCC")
-    } else {
-      clique_color <- "#CCCCCC"
-    }
-    
-    vis_data$nodes$color <- clique_color
-    vis_data$nodes$size <- input$node_size
-    
+
+    nodes_in_any_clique <- unique(unlist(rv$cliques))
+
+    vis_data <- vis_base()
+
+    # 2. Layer selection
+    vis_data <- apply_layer_selection(vis_data, input$layer_selection)
+
+    # 3. Global node styling
+    vis_data <- apply_node_styling(vis_data,
+      node_color = input$node_color,
+      node_shape = input$node_shape,
+      node_size  = input$node_size,
+      label_size = input$label_size
+    )
+
+    # Highlight largest clique in NC State red; others in light gray
+    in_clique <- seq_len(igraph::vcount(g())) %in% nodes_in_any_clique
+    vis_data$nodes$color.background <- ifelse(in_clique, "#CC0000", "#CCCCCC")
+    vis_data$nodes$color.border     <- ifelse(in_clique, "#990000", "#AAAAAA")
+
+    # 4. Edge styling
+    edge_result <- apply_edge_styling(vis_data, g(),
+      hide_arrows    = input$hide_arrows,
+      edge_color     = input$edge_color,
+      edge_width     = input$edge_width,
+      edge_opacity   = input$edge_opacity,
+      edge_style     = input$edge_style,
+      curve_strength = input$curve_strength %||% 0.3
+    )
+    vis_data <- edge_result$vis_data
+
+    # 5. Weight style
+    weight_result <- apply_weight_style(vis_data, g(), input$weight_style)
+    vis_data <- weight_result$vis_data
+
     visNetwork(vis_data$nodes, vis_data$edges) %>%
-      visOptions(highlightNearest = TRUE) %>%
-      visInteraction(navigationButtons = TRUE)
+      visEdges(smooth = edge_result$smooth) %>%
+      visPhysics(solver = "forceAtlas2Based",
+                forceAtlas2Based = list(gravitationalConstant = -50)) %>%
+      visLayout(randomSeed = 42) %>%
+      visInteraction(dragNodes = TRUE, dragView = TRUE,
+                    zoomView = TRUE, navigationButtons = TRUE) %>%
+      visOptions(highlightNearest = TRUE)
   })
   
   # ============================================================
   # K-CORE DECOMPOSITION
   # ============================================================
-  
-  observeEvent(input$compute_kcores, {
-    req(rv$igraph)
-    g <- ensure_igraph(rv$igraph)
-    g <- igraph::as.undirected(g)
-    
-    # Calculate coreness (k-core level)
-    coreness_vec <- igraph::coreness(g)
-    
-    rv$kcores <- coreness_vec
+
+  kcores <- reactive({    
+    igraph::coreness(g())
   })
   
   output$kcore_stats <- renderUI({
-    req(rv$kcores)
-    
-    coreness_vec <- rv$kcores
+    coreness_vec <- kcores()
     max_k <- max(coreness_vec)
     
     tagList(
@@ -223,9 +271,7 @@ communities_server <- function(input, output, session, rv) {
   })
   
   output$kcore_distribution <- renderPlotly({
-    req(rv$kcores)
-    
-    coreness_vec <- rv$kcores
+    coreness_vec <- kcores()
     dist_table <- table(coreness_vec)
     
     plot_ly(x = as.numeric(names(dist_table)), y = as.numeric(dist_table), type = "bar") %>%
@@ -235,33 +281,56 @@ communities_server <- function(input, output, session, rv) {
         yaxis = list(title = "Number of Nodes")
       )
   })
-  
+
   output$kcores_plot <- renderVisNetwork({
-    req(rv$kcores)
-    req(rv$igraph)
+    coreness_vec <- kcores()
+    max_k        <- max(coreness_vec)
+    colors       <- colorRampPalette(c("#FF9999", "#CC0000", "#660000"))(max(max_k, 1))
+    cor_clamped  <- pmax(coreness_vec, 1)
     
-    g <- ensure_igraph(rv$igraph)
-    g <- igraph::as.undirected(g)
-    coreness_vec <- rv$kcores
+    vis_data <- vis_base()
+
+    vis_data <- apply_layer_selection(vis_data, input$layer_selection)
+
+    vis_data <- apply_node_styling(vis_data,
+      node_color = input$node_color,
+      node_shape = input$node_shape,
+      node_size  = input$node_size,
+      label_size = input$label_size
+    )
     
-    vis_data <- igraph_to_visNetwork(g, input$layout)
-    
-    # Color by k-core level
-    max_k <- max(coreness_vec)
-    colors <- colorRampPalette(c("#FF9999", "#CC0000", "#660000"))(max(max_k, 1))
-    coreness_for_color <- pmax(coreness_vec, 1)
-    vis_data$nodes$color <- colors[coreness_for_color]
-    vis_data$nodes$size <- 5 + (coreness_for_color / max_k) * input$node_size
-    
+    # Override color and size by coreness level
+    vis_data$nodes$color.background <- colors[cor_clamped]
+    vis_data$nodes$color.border     <- "#000000"
+    vis_data$nodes$size             <- 5 + (cor_clamped / max_k) * input$node_size
+   
+    # 4. Edge styling
+    edge_result <- apply_edge_styling(vis_data, g(),
+      hide_arrows    = input$hide_arrows,
+      edge_color     = input$edge_color,
+      edge_width     = input$edge_width,
+      edge_opacity   = input$edge_opacity,
+      edge_style     = input$edge_style,
+      curve_strength = input$curve_strength %||% 0.3
+    )
+    vis_data <- edge_result$vis_data
+
+    # 5. Weight style
+    weight_result <- apply_weight_style(vis_data, g(), input$weight_style)
+    vis_data <- weight_result$vis_data
+
     visNetwork(vis_data$nodes, vis_data$edges) %>%
-      visOptions(highlightNearest = TRUE) %>%
-      visInteraction(navigationButtons = TRUE)
+      visEdges(smooth = edge_result$smooth) %>%
+      visPhysics(solver = "forceAtlas2Based",
+                forceAtlas2Based = list(gravitationalConstant = -50)) %>%
+      visLayout(randomSeed = 42) %>%
+      visInteraction(dragNodes = TRUE, dragView = TRUE,
+                    zoomView = TRUE, navigationButtons = TRUE) %>%
+      visOptions(highlightNearest = TRUE)
   })
   
-  output$kcore_membership_table <- renderDT({
-    req(rv$kcores)
-    
-    coreness_vec <- rv$kcores
+  output$kcore_membership_table <- renderDT({    
+    coreness_vec <- kcores()
     node_names <- V(rv$igraph)$name %||% as.character(1:vcount(rv$igraph))
     
     df <- data.frame(
@@ -278,7 +347,7 @@ communities_server <- function(input, output, session, rv) {
   # MODULARITY ANALYSIS
   # ============================================================
   
-  observeEvent(input$calculate_modularity, {
+  modularity_score = reactive({
     req(rv$igraph)
 
     if (is.null(rv$community_results)) {
@@ -286,17 +355,11 @@ communities_server <- function(input, output, session, rv) {
       rv$community_results <- igraph::cluster_louvain(g)
     }
     
-    # Calculate modularity
-    mod_score <- modularity(rv$community_results)
-    
-    # Calculate expected vs observed edges between communities
-    rv$modularity_score <- mod_score
+    modularity(rv$community_results)
   })
   
   output$modularity_scores <- renderUI({
-    req(rv$modularity_score)
-    
-    mod <- rv$modularity_score
+    mod <- modularity_score()
     
     if (mod > 0.3) {
       quality <- "Excellent - Strong community structure"
@@ -317,9 +380,7 @@ communities_server <- function(input, output, session, rv) {
   })
   
   output$modularity_interpretation <- renderUI({
-    req(rv$modularity_score)
-    
-    mod <- rv$modularity_score
+    mod <- modularity_score()
     
     tagList(
       h5("Range: -1 to +1"),

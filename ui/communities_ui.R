@@ -175,19 +175,6 @@ communities_ui <- tagList(
           status = "primary",
           p("A k-core is a maximal subgraph where every node has at least k connections within the subgraph."),
           p("Decomposes network into nested layers: core (k=max) to periphery (k=low)."),
-          
-          hr(),
-          
-          fluidRow(
-            # column(
-            #   width = 6,
-            #   numericInput("k_core_level", "K-Core Level to Display:", value = 2, min = 1, max = 20)
-            # ),
-            column(
-              width = 6,
-              actionButton("compute_kcores", "Compute K-Cores", class = "btn-primary")
-            )
-          )
         )
       ),
       
@@ -248,10 +235,6 @@ communities_ui <- tagList(
           p("Modularity measures how well a partition divides the network into communities."),
           p("Ranges from -1 to 1: higher = stronger community structure."),
           p("Compare different partitioning scores to evaluate community quality."),
-          
-          hr(),
-          
-          actionButton("calculate_modularity", "Calculate Modularity Metrics", class = "btn-primary")
         )
       ),
       

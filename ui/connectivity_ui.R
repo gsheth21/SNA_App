@@ -187,10 +187,6 @@ connectivity_ui <- tagList(
           status = "primary",
           p("The diameter is the longest shortest path in the network."),
           p("Indicates how spread out the network is: small diameter = tightly connected, large = sparse."),
-          
-          hr(),
-          
-          actionButton("compute_diameter", "Compute Diameter", class = "btn-primary")
         )
       ),
       
@@ -241,10 +237,6 @@ connectivity_ui <- tagList(
           p(strong("Bridge:"), "An edge whose removal disconnects the network."),
           p(strong("Cutpoint:"), "A node whose removal disconnects the network (also called articulation point)."),
           p("These are critical structural elements for network resilience and control."),
-          
-          hr(),
-          
-          actionButton("find_bridges_cutpoints", "Find Bridges & Cutpoints", class = "btn-primary")
         )
       ),
       
