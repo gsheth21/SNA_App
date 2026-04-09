@@ -1,3 +1,11 @@
+// Toggle a collapsible sidebar section
+window.toggleSidebarSection = function(btn) {
+    var $btn  = $(btn);
+    var $body = $btn.next('.sidebar-section-body');
+    $body.slideToggle(200);
+    $btn.toggleClass('open');
+};
+
 $(document).ready(function() {
     console.log('Document ready fired');
 

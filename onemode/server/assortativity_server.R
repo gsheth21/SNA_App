@@ -1,0 +1,378 @@
+assortativity_server <- function(input, output, session, rv) {
+  
+  # ============================================================
+  # DEGREE ASSORTATIVITY
+  # ============================================================
+
+  g <- reactive({
+    req(rv$igraph)
+    ensure_igraph(rv$igraph)
+  })
+  
+  degree_assortativity <- reactive({
+    igraph::assortativity_degree(g())
+  })
+
+  vis_base <- reactive({
+    igraph_to_visNetwork(g(), input$layout)
+  })
+  
+  output$degree_assort_result <- renderUI({
+    coeff <- degree_assortativity()
+    
+    # Interpretation
+    if (coeff > 0.2) {
+      interpretation <- "Strong positive: High-degree nodes strongly prefer high-degree neighbors (assortative)"
+    } else if (coeff > 0) {
+      interpretation <- "Weak positive: Slight tendency for similar degrees to connect"
+    } else if (coeff > -0.1) {
+      interpretation <- "Near zero: No clear preference pattern"
+    } else if (coeff > -0.3) {
+      interpretation <- "Weak negative: Slight tendency for dissimilar degrees (disassortative)"
+    } else {
+      interpretation <- "Strong negative: High-degree nodes prefer low-degree neighbors (disassortative)"
+    }
+    
+    tagList(
+      tags$ul(
+        tags$li(strong("Coefficient: "), round(coeff, 4)),
+        tags$li(strong("Interpretation: "), interpretation)
+      ),
+      p(em("Note: Most social networks have positive assortativity; most biological/technological networks are disassortative."))
+    )
+  })
+  
+  output$degree_assort_scatter <- renderPlotly({
+    # Get all edges
+    edges <- igraph::as_edgelist(g(), names = FALSE)
+    degrees <- igraph::degree(g())
+    
+    # Create scatter plot: degree of source vs degree of target
+    from_deg <- degrees[edges[, 1]]
+    to_deg <- degrees[edges[, 2]]
+    
+    plot_ly(x = from_deg, y = to_deg, mode = "markers", type = "scatter") %>%
+      add_trace(x = from_deg, y = to_deg, mode = "text", text = "", 
+                marker = list(size = 5, color = "#CC0000", opacity = 0.5),
+                showlegend = FALSE) %>%
+      layout(
+        title = "Degree Assortativity: Source vs Target Degree",
+        xaxis = list(title = "Source Node Degree"),
+        yaxis = list(title = "Target Node Degree"),
+        hovermode = "closest"
+      )
+  })
+  
+  output$neighbor_degree_dist <- renderPlotly({
+    # Calculate average neighbor degree for each node
+    avg_neighbor_deg <- sapply(seq_len(igraph::vcount(g())), function(i) {
+      neighbors_deg <- igraph::degree(g(), igraph::neighbors(g(), i))
+      if (length(neighbors_deg) > 0) mean(neighbors_deg) else 0
+    })
+    
+    node_deg <- igraph::degree(g())
+    
+    plot_ly(x = node_deg, y = avg_neighbor_deg, mode = "markers", type = "scatter") %>%
+      add_trace(x = node_deg, y = avg_neighbor_deg, mode = "text", text = "",
+                marker = list(size = 6, color = "#000000", opacity = 0.6),
+                showlegend = FALSE) %>%
+      layout(
+        title = "Average Neighbor Degree vs Node Degree",
+        xaxis = list(title = "Node Degree"),
+        yaxis = list(title = "Average Neighbor Degree"),
+        hovermode = "closest"
+      )
+  })
+  
+  # ============================================================
+  # ATTRIBUTE ASSORTATIVITY
+  # ============================================================
+  
+  output$assortativity_attribute_select <- renderUI({
+    attrs <- igraph::vertex_attr_names(g())
+    attrs <- attrs[attrs != "name"]
+    
+    if (length(attrs) > 0) {
+      radioButtons("assort_attribute", "Select Attribute:", 
+                   choices = attrs, selected = attrs[1], inline = TRUE)
+    } else {
+      p("No categorical attributes available for assortativity analysis")
+    }
+  })
+  
+  observeEvent(input$calc_attr_assort, {
+    req(input$assort_attribute)
+    
+    attr_values <- igraph::vertex_attr(g(), input$assort_attribute)
+    
+    # Calculate assortativity for this attribute
+    assort_coeff <- igraph::assortativity_nominal(g(), as.factor(attr_values))
+    
+    rv$attr_assortativity <- list(
+      coefficient = assort_coeff,
+      attribute = input$assort_attribute,
+      values = attr_values
+    )
+  })
+  
+  output$attr_assort_result <- renderUI({
+    req(rv$attr_assortativity)
+    
+    coeff <- rv$attr_assortativity$coefficient
+    attr_name <- rv$attr_assortativity$attribute
+    
+    if (coeff > 0.2) {
+      interpretation <- "Strong: Nodes with same attribute strongly prefer each other"
+    } else if (coeff > 0) {
+      interpretation <- "Weak: Slight preference for same attribute"
+    } else if (coeff > -0.1) {
+      interpretation <- "None: No clear preference"
+    } else {
+      interpretation <- "Negative: Nodes prefer different attribute values"
+    }
+    
+    tagList(
+      h5(paste(attr_name, "Assortativity:")),
+      tags$ul(
+        tags$li(strong("Coefficient: "), round(coeff, 4)),
+        tags$li(strong("Interpretation: "), interpretation)
+      )
+    )
+  })
+  
+  output$attr_assort_plot <- renderVisNetwork({
+    req(rv$attr_assortativity)
+    attr_name <- rv$attr_assortativity$attribute
+    attr_values <- rv$attr_assortativity$values
+    
+    vis_data <- vis_base()
+    
+    vis_data <- apply_layer_selection(vis_data, input$layer_selection)
+    vis_data <- apply_node_styling(vis_data,
+      node_color = input$node_color,
+      node_shape = input$node_shape,
+      node_size  = input$node_size,
+      label_size = input$label_size
+    )
+    # Override colors by attribute groups
+    vis_data <- color_nodes_by_attribute(vis_data, g(), attr_name)
+
+    edge_result <- apply_edge_styling(vis_data, g(),
+      hide_arrows    = input$hide_arrows,
+      edge_color     = input$edge_color,
+      edge_width     = input$edge_width,
+      edge_opacity   = input$edge_opacity,
+      edge_style     = input$edge_style,
+      curve_strength = input$curve_strength %||% 0.3
+    )
+    vis_data <- edge_result$vis_data
+
+    weight_result <- apply_weight_style(vis_data, g(), input$weight_style)
+    vis_data <- weight_result$vis_data
+
+    visNetwork(vis_data$nodes, vis_data$edges) %>%
+      visEdges(smooth = edge_result$smooth) %>%
+      visPhysics(solver = "forceAtlas2Based",
+                forceAtlas2Based = list(gravitationalConstant = -50)) %>%
+      visLayout(randomSeed = 42) %>%
+      visInteraction(dragNodes = TRUE, dragView = TRUE,
+                    zoomView = TRUE, navigationButtons = TRUE) %>%
+      visOptions(highlightNearest = TRUE)
+  })
+
+  output$attr_assort_ggraph <- renderPlot({
+    req(rv$attr_assortativity)
+    attr_name  <- rv$attr_assortativity$attribute
+    attr_vals  <- rv$attr_assortativity$values
+    lvls       <- unique(attr_vals)
+    palette    <- RColorBrewer::brewer.pal(max(length(lvls), 3), "Set1")
+    fill_cols  <- palette[as.integer(factor(attr_vals, levels = lvls))]
+    build_ggraph_plot(g(), input, node_fill_override = fill_cols)
+  }, res = 110)
+
+  output$attr_connection_bar <- renderPlotly({
+    req(rv$attr_assortativity)
+    attr_values <- rv$attr_assortativity$values
+    edges <- igraph::as_edgelist(g(), names = FALSE)
+    
+    # Count connections between attribute groups
+    from_attr <- attr_values[edges[, 1]]
+    to_attr <- attr_values[edges[, 2]]
+    
+    same_attr <- sum(from_attr == to_attr)
+    diff_attr <- sum(from_attr != to_attr)
+    
+    plot_ly(
+      labels = c("Same Attribute", "Different Attributes"),
+      values = c(same_attr, diff_attr),
+      type = "pie"
+    ) %>%
+      layout(title = "Connections by Attribute Similarity")
+  })
+  
+  # ============================================================
+  # MIXING MATRIX
+  # ============================================================
+  
+  output$mixing_attribute_select <- renderUI({
+    attrs <- igraph::vertex_attr_names(g())
+    attrs <- attrs[attrs != "name"]
+    
+    if (length(attrs) > 0) {
+      selectInput("mixing_attribute", "Select Attribute:", 
+                  choices = attrs, selected = attrs[1])
+    } else {
+      p("No categorical attributes available")
+    }
+  })
+  
+  observeEvent(input$calc_mixing_matrix, {
+    req(input$mixing_attribute)
+
+    attr_values <- igraph::vertex_attr(g(), input$mixing_attribute)
+    edges <- igraph::as_edgelist(g(), names = FALSE)
+
+    from_attr <- attr_values[edges[, 1]]
+    to_attr <- attr_values[edges[, 2]]
+    
+    # Create mixing matrix
+    unique_vals <- unique(attr_values)
+    mixing_matrix <- table(from_attr, to_attr)
+    
+    rv$mixing_matrix <- mixing_matrix
+  })
+  
+  output$mixing_matrix_counts <- renderDT({
+    req(rv$mixing_matrix)
+    
+    mix_mat <- rv$mixing_matrix
+    df <- as.data.frame.matrix(mix_mat)
+    df <- cbind(Category = rownames(df), df)
+    
+    datatable(df, options = list(pageLength = 10, scrollX = TRUE))
+  })
+  
+  output$mixing_matrix_proportions <- renderDT({
+    req(rv$mixing_matrix)
+    
+    mix_mat <- rv$mixing_matrix
+    # Convert to proportions
+    prop_mat <- prop.table(mix_mat, margin = 1)
+    df <- as.data.frame.matrix(round(prop_mat, 4))
+    df <- cbind(Category = rownames(df), df)
+    
+    datatable(df, options = list(pageLength = 10, scrollX = TRUE))
+  })
+  
+  output$mixing_matrix_heatmap <- renderPlotly({
+    req(rv$mixing_matrix)
+    
+    mix_mat <- rv$mixing_matrix
+    
+    plot_ly(
+      x = colnames(mix_mat),
+      y = rownames(mix_mat),
+      z = mix_mat,
+      type = "heatmap",
+      colorscale = "Viridis"
+    ) %>%
+      layout(
+        title = "Mixing Matrix Heatmap",
+        xaxis = list(title = "To Category"),
+        yaxis = list(title = "From Category")
+      )
+  })
+  
+  # ============================================================
+  # NUMERICAL ASSORTATIVITY
+  # ============================================================
+  
+  output$numerical_attribute_select <- renderUI({
+    attrs <- igraph::vertex_attr_names(g())
+    attrs <- attrs[attrs != "name"]
+    
+    # Filter to only numeric attributes
+    numeric_attrs <- c()
+    for (attr in attrs) {
+      values <- igraph::vertex_attr(g(), attr)
+      if (is.numeric(values)) {
+        numeric_attrs <- c(numeric_attrs, attr)
+      }
+    }
+    
+    if (length(numeric_attrs) > 0) {
+      selectInput("numerical_assort_attr", "Select Numerical Attribute:", 
+                  choices = numeric_attrs)
+    } else {
+      p("No numerical attributes available")
+    }
+  })
+  
+  observeEvent(input$calc_numerical_assort, {
+    req(input$numerical_assort_attr)
+    
+    attr_values <- as.numeric(igraph::vertex_attr(g(), input$numerical_assort_attr))
+    
+    # Calculate Pearson correlation
+    correlation <- igraph::assortativity(g(), attr_values)
+    
+    # Edge endpoint values kept only for the scatter plot
+    edges          <- igraph::as_edgelist(g(), names = FALSE)
+    from_val       <- attr_values[edges[, 1]]
+    to_val         <- attr_values[edges[, 2]]
+    complete_pairs <- complete.cases(from_val, to_val)
+    
+    rv$numerical_assortativity <- list(
+      correlation = correlation,
+      attribute   = input$numerical_assort_attr,
+      from        = from_val[complete_pairs],
+      to          = to_val[complete_pairs]
+    )
+  })
+  
+  output$numerical_assort_result <- renderUI({
+    req(rv$numerical_assortativity)
+    
+    corr <- rv$numerical_assortativity$correlation
+    attr_name <- rv$numerical_assortativity$attribute
+    
+    if (corr > 0.5) {
+      interpretation <- "Strong positive: nodes prefer neighbors with similar values"
+    } else if (corr > 0.2) {
+      interpretation <- "Moderate positive: weak preference for similarity"
+    } else if (corr > -0.2) {
+      interpretation <- "Weak/none: no clear pattern"
+    } else if (corr > -0.5) {
+      interpretation <- "Moderate negative: weak disassortative pattern"
+    } else {
+      interpretation <- "Strong negative: nodes prefer neighbors with dissimilar values"
+    }
+    
+    tagList(
+      h5(paste(attr_name, "Correlation:")),
+      tags$ul(
+        tags$li(strong("Assortativity coefficient: "), round(corr, 4)),
+        tags$li(strong("Interpretation: "), interpretation)
+      )
+    )
+  })
+  
+  output$connected_values_plot <- renderPlotly({
+    req(rv$numerical_assortativity)
+    
+    from <- rv$numerical_assortativity$from
+    to <- rv$numerical_assortativity$to
+    attr_name <- rv$numerical_assortativity$attribute
+    
+    plot_ly(x = from, y = to, mode = "markers", type = "scatter") %>%
+      add_trace(x = from, y = to, mode = "text", text = "",
+                marker = list(size = 5, color = "#CC0000", opacity = 0.5),
+                showlegend = FALSE) %>%
+      layout(
+        title = paste("Connected Nodes:", attr_name),
+        xaxis = list(title = paste("Source", attr_name)),
+        yaxis = list(title = paste("Target", attr_name)),
+        hovermode = "closest"
+      )
+  })
+}
