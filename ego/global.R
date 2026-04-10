@@ -7,6 +7,7 @@ library(igraph)
 library(visNetwork)
 library(ggplot2)
 library(ggraph)
+library(graphlayouts)
 library(RColorBrewer)
 library(gridExtra)
 

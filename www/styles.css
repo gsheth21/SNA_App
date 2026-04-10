@@ -149,7 +149,7 @@ body, html {
     transform: rotate(180deg);
 }
 .sidebar-section-body {
-    overflow: hidden;
+    /* overflow: hidden; */
 }
 section.sidebar .shiny-input-container {
     padding-top: 0;

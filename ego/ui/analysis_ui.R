@@ -21,9 +21,18 @@ analysis_ui <- tagList(
           solidHeader = TRUE,
           p(tags$small("Use sidebar to toggle view mode (alters only vs with ego), layout, colors, etc."),
             style = "color: #888; margin-bottom: 10px;"),
-          withSpinner(
-            visNetworkOutput("analysis_visplot", height = "600px"),
-            color = "#CC0000", type = 4
+          tabsetPanel(
+            id = "analysis_graph_tabs", selected = "ggraph",
+            tabPanel("ggraph", value = "ggraph",
+              br(),
+              withSpinner(plotOutput("analysis_ggraph", height = "600px"),
+                          color = "#CC0000", type = 4)
+            ),
+            tabPanel("Interactive", value = "interactive",
+              br(),
+              withSpinner(visNetworkOutput("analysis_visplot", height = "600px"),
+                          color = "#CC0000", type = 4)
+            )
           )
         )
       ),

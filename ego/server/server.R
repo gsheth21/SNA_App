@@ -5,6 +5,7 @@ source(here::here("ego", "server", "analysis_server.R"))
 source(here::here("shared", "helpers", "ui_helpers.R"))
 source(here::here("shared", "helpers", "network_helpers.R"))
 source(here::here("shared", "helpers", "plot_helpers.R"))
+source(here::here("shared", "helpers", "ggraph_helpers.R"))
 
 server <- function(input, output, session) {
   

@@ -1,5 +1,5 @@
 load_network_data <- function(file_name, object_name) {
-  data_path <- file.path("data", paste0(file_name, ".rda"))
+  data_path <- here::here("shared", "data", paste0(file_name, ".rda"))
   if (!file.exists(data_path))
     stop(paste("Dataset file not found:", data_path))
 

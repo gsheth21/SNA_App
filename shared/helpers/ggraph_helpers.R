@@ -155,7 +155,7 @@ build_ggraph_plot <- function(
   } else {
     NULL
   }
-  end_cap_size <- grid::unit(3, "pt")
+  # end_cap_size <- grid::unit(3, "pt")
 
   if (do_edges && n_edges > 0) {
     if (edge_style == "curved") {
@@ -183,7 +183,7 @@ build_ggraph_plot <- function(
     }
     p <- p +
       ggraph::scale_edge_colour_identity() +
-      ggraph::scale_edge_width(range = c(0.3, 5), guide = "none") +
+      ggraph::scale_edge_width_identity(guide = "none") +
       ggraph::scale_edge_linetype_identity()
   }
 

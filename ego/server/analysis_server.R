@@ -103,6 +103,52 @@ analysis_server <- function(id, rv, input, output, session) {
       visOptions(highlightNearest = TRUE)
   })
 
+  # ggraph static version of the ego/alter network
+  output$analysis_ggraph <- renderPlot({
+    req(current_graph())
+    g    <- current_graph()
+    n    <- igraph::vcount(g)
+    mode <- input$view_mode %||% "alters_only"
+
+    # Translate ego sidebar inputs → names expected by build_ggraph_plot
+    shim <- list(
+      node_color      = input$alter_color    %||% "#1f78b4",
+      node_shape      = input$alter_shape    %||% "dot",
+      node_size       = input$alter_size     %||% 10,
+      label_size      = input$label_size     %||% 12,
+      color_attribute = "None",
+      size_attribute  = "None",
+      shape_attribute = "None",
+      edge_color      = input$edge_color     %||% "#555555",
+      edge_width      = input$edge_width     %||% 1,
+      edge_opacity    = input$edge_opacity   %||% 0.8,
+      edge_style      = input$edge_style     %||% "straight",
+      hide_arrows     = FALSE,
+      weight_style    = input$weight_style   %||% "none",
+      curve_strength  = input$curve_strength %||% 0.3,
+      layer_selection = input$layer_selection %||% c("edges", "labels"),
+      layout          = input$layout         %||% "fr"
+    )
+
+    # Per-node color / size overrides when ego node is present
+    fill_override <- NULL
+    size_override <- NULL
+    if (mode == "with_ego" && n >= 1) {
+      ego_idx      <- n
+      alter_col    <- input$alter_color %||% "#1f78b4"
+      ego_sz       <- (input$ego_size   %||% 15) / 3.5
+      alter_sz     <- (input$alter_size %||% 10) / 3.5
+      fill_override                <- rep(alter_col,  n)
+      fill_override[ego_idx]       <- "#CC0000"
+      size_override                <- rep(alter_sz,   n)
+      size_override[ego_idx]       <- ego_sz
+    }
+
+    build_ggraph_plot(g, shim,
+                      node_fill_override = fill_override,
+                      node_size_scores   = size_override)
+  }, res = 110)
+
   # Alter attributes display
   output$analysis_alter_attr_ui <- renderUI({
     req(current_graph())
