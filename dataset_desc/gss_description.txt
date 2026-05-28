@@ -1,0 +1,80 @@
+================================================================================
+DATASET DESCRIPTION: GENERAL SOCIAL SURVEY 2004 (SURVEY DATA)
+================================================================================
+
+DATASET NAME    : General Social Survey 2004 — Core Survey Data
+FILE            : gss.rda
+R OBJECTS       : gss (data frame)
+
+--------------------------------------------------------------------------------
+BACKGROUND
+--------------------------------------------------------------------------------
+The General Social Survey (GSS) is one of the longest-running and most widely
+used social surveys in the United States. This file contains data from the 2004
+wave, including responses from 1,467 survey respondents across 122 variables.
+
+A central feature of this dataset for social network analysis is the name
+generator module: respondents were asked to identify up to five people ("alters")
+with whom they discuss important matters. For each alter listed, the survey
+collected information on tie strength, relationship type (e.g., spouse, parent,
+sibling, coworker, friend), and the extent to which alters know each other.
+Additional name interpreter variables capture alter characteristics including
+age, education, sex, race, religion, and political party identification.
+
+This dataset is particularly associated with debates about trends in American
+social isolation: McPherson et al. (2006) reported a dramatic shrinkage in core
+discussion networks between 1985 and 2004, a finding subsequently critiqued
+by Fischer (2009) as potentially artifactual.
+
+See also: gss_ego.rda for the ego network reformatting of this data.
+
+DATA COLLECTION : NORC at the University of Chicago, 2004. National probability
+                  sample of U.S. adults.
+DOMAIN          : Sociology / Ego Network Analysis / Social Isolation Research
+
+--------------------------------------------------------------------------------
+NETWORK STRUCTURE
+--------------------------------------------------------------------------------
+NETWORK TYPE    : Survey data with embedded ego network measures (not a graph
+                  object; use gss_ego.rda for igraph-based analysis)
+DIRECTED        : N/A (relational data embedded in survey format)
+WEIGHTED        : N/A
+
+OBSERVATIONS    : 1,467 respondents (egos)
+VARIABLES       : 122
+
+--------------------------------------------------------------------------------
+ATTRIBUTES
+--------------------------------------------------------------------------------
+KEY VARIABLES (selection):
+  Ego-level    : GSSID, AGE, EDUC, SEX, RACE, PARTYID, RELIG, NUMGIVEN
+  Alter tie    : EQCLOSE, RCLOSE1–RCLOSE5 (relationship closeness)
+  Alter-alter  : CLOSE12–CLOSE45 (alter-alter tie indicators, up to 5 alters)
+  Alter sex    : SEX1–SEX5
+  Alter race   : RACE1–RACE5
+  Relationship : SPOUSE1–SPOUSE5, PARENT1–PARENT5, SIBLING1–SIBLING5,
+                 CHILD1–CHILD5, OTHFAM1–OTHFAM5, COWORK1–COWORK5,
+                 MEMGRP1–MEMGRP5, NEIGHBR1–NEIGHBR5, FRIEND1–FRIEND5,
+                 ADVISOR1–ADVISOR5, OTHER1–OTHER5
+  Alter-level  : TALKTO1–TALKTO5, KNOWN1–KNOWN5, EDUC1–EDUC5,
+                 AGE1–AGE5, RELIG1–RELIG5, PARTYID1–PARTYID3
+  Summary      : TALKPOL, FRNDKNOW
+
+NETWORK COMPLEXITY : High (large survey dataset; ego network structure embedded
+                     in wide format; requires restructuring for graph analysis)
+
+--------------------------------------------------------------------------------
+REFERENCES
+--------------------------------------------------------------------------------
+Davern, M., Bautista, R., Freese, J., Herd, P., & Morgan, S. L. (2025).
+  General Social Survey 1972–2024 [Machine-readable data file]. NORC at the
+  University of Chicago.
+
+Fischer, C. S. (2009). The 2004 GSS finding of shrunken social networks: An
+  artifact? American Sociological Review, 74(4), 657–669.
+
+McPherson, M., Smith-Lovin, L., & Brashears, M. E. (2006). Social isolation
+  in America: Changes in core discussion networks over two decades. American
+  Sociological Review, 71(3), 353–375.
+
+================================================================================

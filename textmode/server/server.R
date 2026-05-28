@@ -132,6 +132,59 @@ server <- function(input, output, session) {
             )
           )
         )
+      ),
+      "dataset_info" = tags$div(
+        id = "tab-dataset_info", class = "tab-inner",
+        fluidRow(
+          box(
+            title       = tagList(icon("database"), " Declaration of Independence Corpus"),
+            width       = 12,
+            solidHeader = TRUE,
+            status      = "primary",
+            h4("The United States Declaration of Independence (1776)", style = "margin-top: 0; color: #CC0000;"),
+            hr(),
+            h5("Background"),
+            p("The Declaration of Independence is a public domain historical document authored primarily by Thomas
+              Jefferson and adopted by the Continental Congress on July 4, 1776. It is ideally suited for teaching
+              text network analysis: the document is familiar, historically significant, and has a clear rhetorical
+              architecture (statement of principles \u2192 list of grievances \u2192 declaration). At roughly 14 sentences
+              and 400+ tokens after stopword removal, it is small enough to inspect manually while still
+              producing a meaningful co-occurrence network."),
+            p("In this app, the text is hardcoded as a character vector in ", code("global.R"), " and parsed into
+              sentences. Two words are linked if they co-occur in the same sentence; edge weights represent
+              the number of shared sentences."),
+            hr(),
+            h5("Corpus Structure"),
+            tags$table(
+              class = "table table-condensed",
+              style = "font-size: 13px; margin-bottom: 8px; width: auto;",
+              tags$tbody(
+                tags$tr(tags$td(strong("Document:"),           style = "padding-right: 16px;"), tags$td("United States Declaration of Independence")),
+                tags$tr(tags$td(strong("Year:")),              tags$td("1776")),
+                tags$tr(tags$td(strong("Approx. size:")),      tags$td("\u2248 14 sentences; \u2248 400 tokens after stopword removal")),
+                tags$tr(tags$td(strong("Co-occurrence unit:")),tags$td("Sentence")),
+                tags$tr(tags$td(strong("Edge weight:")),       tags$td("Number of sentences in which two words co-occur")),
+                tags$tr(tags$td(strong("Domain:")),            tags$td("Political Philosophy / Historical Documents / Text Networks"))
+              )
+            ),
+            hr(),
+            h5("R Packages Used"),
+            tags$ul(
+              tags$li(code("tidytext"), " \u2014 tokenization and stopword removal"),
+              tags$li(code("widyr"),    " \u2014 pairwise co-occurrence counting"),
+              tags$li(code("igraph"),   " \u2014 graph construction and centrality"),
+              tags$li(code("ggraph"),   " \u2014 static network visualization"),
+              tags$li(code("visNetwork"), " \u2014 interactive network visualization")
+            ),
+            hr(),
+            h5("References"),
+            tags$ul(
+              tags$li("Jefferson, T., et al. (1776). The Declaration of Independence. Continental Congress."),
+              tags$li("Stoltz, D. S., & Taylor, M. A. (2024). Mapping Texts. Oxford University Press."),
+              tags$li("Silge, J., & Robinson, D. (2017). Text Mining with R. O'Reilly Media.")
+            )
+          )
+        )
       )
     )
   })

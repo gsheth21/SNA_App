@@ -155,6 +155,63 @@ server <- function(input, output, session) {
           ")
         )
       ))
+    } else if (tab == "dataset_info") {
+      return(tagList(
+        fluidRow(
+          box(
+            title       = tagList(icon("database"), " GSS 2004 Ego Network Data"),
+            width       = 12,
+            solidHeader = TRUE,
+            status      = "primary",
+            h4("General Social Survey \u2014 Ego Network Module (2004)", style = "margin-top: 0; color: #CC0000;"),
+            hr(),
+            h5("Background"),
+            p("The General Social Survey (GSS) has been conducted annually or biannually since 1972 by NORC at the
+              University of Chicago. In 2004, the GSS included an ego network module in which respondents were asked
+              to name up to five people (alters) with whom they discuss important matters, and to describe
+              relationships among those alters. This dataset is widely used to study social isolation, political
+              polarization, and the composition of personal networks in American society."),
+            hr(),
+            h5("Network Structure"),
+            tags$table(
+              class = "table table-condensed",
+              style = "font-size: 13px; margin-bottom: 8px; width: auto;",
+              tags$tbody(
+                tags$tr(tags$td(strong("Type:"),     style = "padding-right: 16px;"), tags$td("Ego network (egocentric)")),
+                tags$tr(tags$td(strong("Directed:")), tags$td("No")),
+                tags$tr(tags$td(strong("Weighted:")), tags$td("Yes \u2014 alter-alter closeness (2 = especially close, 1 = know each other)")),
+                tags$tr(tags$td(strong("Domain:")),   tags$td("Sociology / Ego Network Analysis / Social Isolation Research"))
+              )
+            ),
+            tags$table(
+              class = "table table-condensed table-hover",
+              style = "font-size: 13px;",
+              tags$thead(tags$tr(
+                tags$th("R Object"), tags$th("Size", style = "text-align: center;"), tags$th("Description")
+              )),
+              tags$tbody(
+                tags$tr(tags$td(tags$code("ego")),          tags$td("288 rows",   style = "text-align: center;"), tags$td("Ego-level survey data frame with demographics")),
+                tags$tr(tags$td(tags$code("alterlong")),    tags$td("955 rows",   style = "text-align: center;"), tags$td("Long-format alter data (multiple rows per ego)")),
+                tags$tr(tags$td(tags$code("gr.list")),      tags$td("288 graphs", style = "text-align: center;"), tags$td("igraph list \u2014 alter-only networks (no ego node)")),
+                tags$tr(tags$td(tags$code("gr.list.ego")), tags$td("288 graphs", style = "text-align: center;"), tags$td("igraph list \u2014 networks with ego node included"))
+              )
+            ),
+            hr(),
+            h5("Attributes"),
+            tags$ul(
+              tags$li(strong("Ego: "), "ego_id, AGE, EDUC, SEX, RACE, PARTYID, RELIG, NUMGIVEN"),
+              tags$li(strong("Alter: "), "alter_id, ego_id, alter_num, sex, race, age, educ, relig, partyid, close (and more)")
+            ),
+            hr(),
+            h5("References"),
+            tags$ul(
+              tags$li("Davern, M., et al. (2025). General Social Survey 1972\u20132022 Codebook. NORC at the University of Chicago."),
+              tags$li("Fischer, C. S. (2009). The 2004 GSS finding of shrunken social networks. American Sociological Review, 74(4), 657\u2013669."),
+              tags$li("McPherson, M., Smith-Lovin, L., & Brashears, M. (2006). Social isolation in America. American Sociological Review, 71(3), 353\u2013375.")
+            )
+          )
+        )
+      ))
     } else if (tab == "help") {
       return(tagList(
         box(

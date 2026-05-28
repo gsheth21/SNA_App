@@ -1,0 +1,73 @@
+================================================================================
+DATASET DESCRIPTION: KRACKHARDT HIGH-TECH MANAGERS
+================================================================================
+
+DATASET NAME    : Krackhardt High-Tech Managers
+FILE            : hi_tech.rda
+R OBJECTS       : hta (igraph) — Advice network
+                  htf (igraph) — Friendship network
+                  htr (igraph) — Reports-To network
+
+--------------------------------------------------------------------------------
+BACKGROUND
+--------------------------------------------------------------------------------
+These data were collected from the 21 managers of a high-technology equipment
+manufacturer on the west coast of the United States (total company size: just
+over 100 employees). Three distinct types of directed relational data were
+collected:
+
+  hta (ADVICE)     -- Each manager identified colleagues they go to for advice.
+                      Directed: A → B means A seeks advice from B.
+                      21 nodes | 190 edges
+
+  htf (FRIENDSHIP) -- Each manager identified colleagues they consider friends.
+                      Directed: A → B means A names B as a friend (asymmetric).
+                      21 nodes | 102 edges
+
+  htr (REPORTS_TO) -- Formal organizational hierarchy, extracted from company
+                      documents. A → B means A reports to B.
+                      21 nodes | 20 edges
+
+All three networks share the same node set and attribute table, enabling
+direct comparison of formal structure (htr) with informal networks (hta, htf).
+This multiplex design makes the dataset ideal for studying the alignment (or
+misalignment) of formal and informal organizational structure.
+
+DATA COLLECTION : Survey and organizational documents; west coast U.S.
+                  technology company, mid-1980s.
+DOMAIN          : Organizational Behavior / Management / Multiplex Networks
+
+--------------------------------------------------------------------------------
+NETWORK STRUCTURE
+--------------------------------------------------------------------------------
+NETWORK TYPE    : Multiplex (three one-mode directed networks, shared node set)
+DIRECTED        : Yes (all three networks)
+WEIGHTED        : No
+
+  hta (Advice)      : 21 nodes | 190 edges
+  htf (Friendship)  : 21 nodes | 102 edges
+  htr (Reports-To)  : 21 nodes |  20 edges
+
+--------------------------------------------------------------------------------
+ATTRIBUTES
+--------------------------------------------------------------------------------
+NODE ATTRIBUTES (shared across hta, htf, htr):
+  name    -- Manager name
+  age     -- Age in years
+  tenure  -- Length of service in years
+  level   -- Hierarchical level (1 = CEO, 2 = Vice President, 3 = Manager)
+  dept    -- Department (0 = CEO/no dept, 1–4 = departments)
+EDGE ATTRIBUTES : (none)
+
+NETWORK COMPLEXITY : Low-Moderate (small multiplex network; excellent for
+                     teaching organizational SNA and multiplex methods)
+
+--------------------------------------------------------------------------------
+REFERENCES
+--------------------------------------------------------------------------------
+Krackhardt, D. (1987). Cognitive social structures. Social Networks, 9, 104–134.
+
+Wasserman, S., & Faust, K. (1994). Social Network Analysis: Methods and
+  Applications. Cambridge University Press.
+
+================================================================================

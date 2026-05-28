@@ -35,18 +35,10 @@ overview_server <- function(input, output, session, rv) {
     )
   })
   
-  # Dataset description
+  # Dataset description (overview tab — full rich info)
   output$dataset_description <- renderUI({
     req(input$dataset)
-    
-    description <- get_dataset_description(input$dataset)
-    
-    tagList(
-      p(description),
-      hr(),
-      h5("Available Attributes:"),
-      uiOutput("dataset_attributes")
-    )
+    render_dataset_info_ui(input$dataset)
   })
 
   output$dataset_attributes <- renderUI({

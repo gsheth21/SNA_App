@@ -57,8 +57,12 @@ create_header <- function() {
           `data-tab` = "about",
           icon("info-circle"),
           "About"
+        ),        tags$a(
+          class      = "nav-link",
+          `data-tab` = "dataset_info",
+          icon("database"),
+          "Dataset Info"
         ),
-
         # ── Module Switcher ──────────────────────────────────
         tags$div(class = "module-divider"),
         tags$div(

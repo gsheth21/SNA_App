@@ -1,0 +1,57 @@
+================================================================================
+DATASET DESCRIPTION: FRATERNITY SOCIAL NETWORKS (LONGITUDINAL)
+================================================================================
+
+DATASET NAME    : Fraternity Social Networks (Longitudinal)
+FILE            : frat_graphs.rda
+R OBJECTS       : frat_i (list of igraph objects)
+                  frat_n (list of igraph objects)
+
+--------------------------------------------------------------------------------
+BACKGROUND
+--------------------------------------------------------------------------------
+This dataset contains longitudinal social network data from a fraternity,
+capturing evolving social ties across 15 observation waves. Two parallel lists
+of igraph objects are provided -- frat_i and frat_n -- representing the same
+network under different construction or filtering conditions (e.g., different
+tie definitions or inclusion criteria). Each list element is named by wave
+(frat0 through frat15, with frat9 absent), allowing analysis of how network
+structure changes over time within a bounded social group.
+
+Each wave captures a directed network of 17 individuals. The longitudinal
+structure makes this dataset particularly useful for studying tie formation,
+dissolution, and the dynamics of small-group cohesion.
+
+DATA COLLECTION : Repeated sociometric surveys within a single fraternity
+                  chapter across 15 observation periods.
+DOMAIN          : Social Psychology / Small Group Dynamics / Longitudinal SNA
+
+--------------------------------------------------------------------------------
+NETWORK STRUCTURE
+--------------------------------------------------------------------------------
+NETWORK TYPE    : One-mode, directed, longitudinal (15 waves)
+DIRECTED        : Yes
+WEIGHTED        : No
+
+  Per wave      : 17 nodes | ~51 edges (varies by wave)
+  Waves         : frat0, frat1, ..., frat8, frat10, ..., frat15 (15 total)
+  Lists         : frat_i and frat_n (two parallel representations)
+
+--------------------------------------------------------------------------------
+ATTRIBUTES
+--------------------------------------------------------------------------------
+NODE ATTRIBUTES : name -- Anonymized individual identifier (X1, X2, ..., X17)
+EDGE ATTRIBUTES : (none)
+
+NOTE: frat_i and frat_n differ in their construction; compare the two lists
+to understand alternative operationalizations of ties within the same group.
+
+NETWORK COMPLEXITY : Moderate (small per-wave network; complexity from
+                     longitudinal and dual-representation structure)
+
+--------------------------------------------------------------------------------
+REFERENCES
+--------------------------------------------------------------------------------
+(Primary reference not available in provided documentation.)
+
+================================================================================

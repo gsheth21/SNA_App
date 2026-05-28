@@ -411,6 +411,19 @@ centrality_ui <- tagList(
           )
         )
       )
+    ),
+
+    # ── Dataset Info sub-tab ───────────────────────────────────────────────────────────────────
+    tabPanel(
+      title = tagList(icon("info-circle"), " Dataset Info"),
+      value = "dataset_info",
+      fluidRow(
+        box(
+          width       = 12,
+          solidHeader = FALSE,
+          uiOutput("chapter_dataset_info")
+        )
+      )
     )
   )
 )

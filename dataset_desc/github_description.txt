@@ -1,0 +1,60 @@
+================================================================================
+DATASET DESCRIPTION: GITHUB DEVELOPER COLLABORATION NETWORK
+================================================================================
+
+DATASET NAME    : GitHub Developer Collaboration Network
+FILE            : github.rda
+R OBJECTS       : github (igraph)
+
+--------------------------------------------------------------------------------
+BACKGROUND
+--------------------------------------------------------------------------------
+This dataset represents the collaboration network among software developers
+employed at one large (anonymous) technology company, as observed through their
+activity on GitHub. Nodes are individual developers; edges reflect co-contribution
+to shared code repositories (i.e., two developers are linked if they both
+committed code to at least one common repository).
+
+The network is a one-mode projection of an underlying two-mode (bipartite)
+person-by-repository network. Edge weights reflect the number of shared
+repositories between any two developers, making this a valued network. Not all
+developers form a single connected component; a component attribute identifies
+which connected subgraph each node belongs to.
+
+DATA COLLECTION : GitHub activity logs, January 2018 to February 2021,
+                  extracted via the GHTorrent project.
+DOMAIN          : Computational Social Science / Software Engineering /
+                  Organizational Networks
+
+--------------------------------------------------------------------------------
+NETWORK STRUCTURE
+--------------------------------------------------------------------------------
+NETWORK TYPE    : One-mode, undirected, weighted
+DIRECTED        : No
+WEIGHTED        : Yes (number of shared repositories)
+NODES           : 174 (individual developers)
+EDGES           : 890 (co-contribution ties between developers)
+
+--------------------------------------------------------------------------------
+ATTRIBUTES
+--------------------------------------------------------------------------------
+NODE ATTRIBUTES : name      -- Developer identifier (anonymized)
+                  component -- Connected component membership (integer)
+EDGE ATTRIBUTES : weight    -- Number of shared repositories (integer)
+
+NETWORK COMPLEXITY : Moderate-High (medium-large network; weighted; multiple
+                     components; real-world organizational setting)
+
+--------------------------------------------------------------------------------
+REFERENCES
+--------------------------------------------------------------------------------
+Gousios, G., Vasilescu, B., Serebrenik, A., & Zaidman, A. (2014). Lean
+  GHTorrent: GitHub data on demand. In Proceedings of the 11th Working
+  Conference on Mining Software Repositories (MSR 2014), pp. 384–387. ACM.
+
+Middleton, J., Murphy-Hill, E., Green, D., Meade, A., Mayer, R., White, D.,
+  & McDonald, S. (2018). Which contributions predict whether developers are
+  accepted into GitHub teams. In Proceedings of the 15th International
+  Conference on Mining Software Repositories (MSR '18), pp. 403–413. ACM.
+
+================================================================================

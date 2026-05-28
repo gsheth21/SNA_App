@@ -1,0 +1,82 @@
+================================================================================
+DATASET DESCRIPTION: GENERAL SOCIAL SURVEY 2004 (EGO NETWORK DATA)
+================================================================================
+
+DATASET NAME    : General Social Survey 2004 — Ego Network Data
+FILE            : gss_ego.rda
+R OBJECTS       : ego (data frame)
+                  alterlong (data frame)
+                  gr.list (list of igraph objects — alter networks only)
+                  gr.list.ego (list of igraph objects — ego + alters)
+
+--------------------------------------------------------------------------------
+BACKGROUND
+--------------------------------------------------------------------------------
+This file is a restructured, ego-network-ready version of the 2004 General
+Social Survey (see also gss.rda). The raw GSS survey matrix has been converted
+into a set of ego network objects suitable for direct use in igraph-based
+analyses. A total of 288 egos have at least one named alter and are included.
+
+Four objects are provided to support different analytical approaches:
+
+  ego          -- Data frame of 288 ego respondents with demographic attributes.
+  alterlong    -- Long-format data frame (955 rows) of alter-level attributes,
+                  one row per alter, linked to ego by ego_id.
+  gr.list      -- Named list of 288 igraph objects, one per ego. Each graph
+                  contains only the alters and their inter-connections (alter
+                  network without ego node).
+  gr.list.ego  -- Named list of 288 igraph objects, one per ego. Each graph
+                  includes the ego node connected to all alters, plus alter-
+                  alter ties (full ego network with ego included).
+
+This structure supports both aggregate ego network analysis (e.g., average
+density across all egos) and individual-level inspection of specific ego
+networks.
+
+See also: gss.rda for the full survey data in wide format.
+
+DATA COLLECTION : NORC at the University of Chicago, 2004. National probability
+                  sample of U.S. adults.
+DOMAIN          : Sociology / Ego Network Analysis / Social Isolation Research
+
+--------------------------------------------------------------------------------
+NETWORK STRUCTURE
+--------------------------------------------------------------------------------
+NETWORK TYPE    : Collection of ego networks (one igraph per respondent)
+DIRECTED        : No (alter-alter ties are undirected)
+WEIGHTED        : No
+
+  ego           : 288 respondents x 8 variables
+  alterlong     : 955 alter observations x 20 variables
+  gr.list       : 288 igraph objects (alter networks, no ego node)
+  gr.list.ego   : 288 igraph objects (full ego networks with ego node)
+
+--------------------------------------------------------------------------------
+ATTRIBUTES
+--------------------------------------------------------------------------------
+EGO ATTRIBUTES (ego data frame):
+  ego_id, AGE, EDUC, SEX, RACE, PARTYID, RELIG, NUMGIVEN
+
+ALTER ATTRIBUTES (alterlong data frame):
+  ego_id, alter_id, SEX, RACE, SPOUSE, PARENT, SIBLING, CHILD, OTHFAM,
+  COWORK, MEMGRP, NEIGHBR, FRIEND, ADVISOR, OTHER, TALKTO, KNOWN,
+  EDUC, AGE, RELIG
+
+NETWORK COMPLEXITY : High (288 separate networks; requires list-apply workflows;
+                     richer for ego network methods than whole-network analyses)
+
+--------------------------------------------------------------------------------
+REFERENCES
+--------------------------------------------------------------------------------
+Davern, M., Bautista, R., Freese, J., Herd, P., & Morgan, S. L. (2025).
+  General Social Survey 1972–2024 [Machine-readable data file]. NORC at the
+  University of Chicago.
+
+Fischer, C. S. (2009). The 2004 GSS finding of shrunken social networks: An
+  artifact? American Sociological Review, 74(4), 657–669.
+
+McPherson, M., Smith-Lovin, L., & Brashears, M. E. (2006). Social isolation
+  in America: Changes in core discussion networks over two decades. American
+  Sociological Review, 71(3), 353–375.
+
+================================================================================

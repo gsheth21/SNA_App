@@ -1,0 +1,57 @@
+================================================================================
+DATASET DESCRIPTION: MORENO CLASSROOM SOCIOMETRY
+================================================================================
+
+DATASET NAME    : Moreno Classroom Sociometry
+FILE            : moreno.rda
+R OBJECTS       : moreno (igraph)
+
+--------------------------------------------------------------------------------
+BACKGROUND
+--------------------------------------------------------------------------------
+This dataset contains Jacob Moreno's classic sociometric data collected from a
+classroom of 33 children. Moreno is widely credited as the founder of
+sociometry — the systematic measurement of social preferences within groups —
+and this dataset is among the earliest and most cited examples of social network
+data in the history of the field.
+
+Edges represent mutual friendship or positive social nominations between
+students. The network captures the informal social structure of the classroom,
+including popular children (high degree), isolated children (low degree), and
+clique formations. Gender is recorded as a node attribute, enabling analysis
+of gender-based segregation in children's peer networks.
+
+This is an undirected network — ties are treated as symmetric regardless of
+directionality of the original nominations.
+
+DATA COLLECTION : Sociometric surveys administered to a classroom of children;
+                  early-to-mid 20th century. Collected by Jacob L. Moreno.
+DOMAIN          : Developmental Psychology / Sociometry / Classic SNA
+
+--------------------------------------------------------------------------------
+NETWORK STRUCTURE
+--------------------------------------------------------------------------------
+NETWORK TYPE    : One-mode, undirected, binary
+DIRECTED        : No
+WEIGHTED        : No
+NODES           : 33 (students)
+EDGES           : 46 (friendship/positive nomination ties)
+
+--------------------------------------------------------------------------------
+ATTRIBUTES
+--------------------------------------------------------------------------------
+NODE ATTRIBUTES : vertex.names -- Student identifier
+                  gender       -- Gender (coded 1 or 2; 16 and 17 students
+                                  respectively)
+EDGE ATTRIBUTES : (none)
+
+NETWORK COMPLEXITY : Low (very small, sparse network; historically significant;
+                     ideal for introductory SNA instruction)
+
+--------------------------------------------------------------------------------
+REFERENCES
+--------------------------------------------------------------------------------
+Moreno, J. L. (1934). Who Shall Survive? Foundations of Sociometry, Group
+  Psychotherapy and Sociodrama. Nervous and Mental Disease Publishing Company.
+
+================================================================================

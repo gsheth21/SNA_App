@@ -62,28 +62,270 @@ ensure_network <- function(net) {
   return(net)
 }
 
-# Get dataset description/metadata
+# Get dataset description/metadata (legacy one-liner — kept for compatibility)
 get_dataset_description <- function(dataset_name) {
   descriptions <- list(
-    "ifm" = "Hi-Tech Managers Network: Advice network among managers in a high-tech company with attributes including department, tenure, and level.",
-    
-    "drugnet" = "Hartford Drug Users Network: Network of drug users in Hartford, CT. Contains demographic information including ethnicity, gender, and drug use patterns. Used for assortativity analysis.",
-    
-    "github" = "GitHub Collaboration Network: Online interactions among software developers at a top tech company. Each tie represents shared contributions to GitHub repositories. Contains 174 nodes with collaboration patterns.",
-    
-    "karate" = "Zachary's Karate Club: Classic social network of friendships in a university karate club. Often used to demonstrate community detection algorithms.",
-    
-    "flomarriage" = "Florentine Families Marriage Network: Marriage ties among Renaissance Florentine families. Historical network used to study elite power structures.",
-    
-    "flobusiness" = "Florentine Families Business Network: Business relationships among Renaissance Florentine families.",
-    
-    "sampson" = "Sampson's Monks Network: Social relationships among monks in a monastery. Multiple relation types including liking, esteem, and influence.",
-    
-    "faux.mesa.high" = "Simulated High School Friendship Network: Synthetic network based on real adolescent friendship patterns with grade and race attributes."
+    "moreno"   = "Moreno Classroom Sociometry: Classic sociometric friendship network among 33 children, with gender attributes.",
+    "ifm"      = "Padgett Florentine Families Marriage Network: Marriage alliances among 16 Renaissance Florentine families circa 1430, with wealth and political attributes.",
+    "sampson"  = "Sampson Monastery Study: Friendship ties among 18 monks during a period of internal conflict, with faction membership attributes.",
+    "github"   = "GitHub Developer Collaboration Network: Weighted co-contribution network among 174 software developers, 2018–2021.",
+    "drugnet"  = "Drug User Social Networks (Hartford, CT): Directed social ties among drug users; two versions — full network and largest connected component.",
+    "hi_tech"  = "Krackhardt High-Tech Managers: Multiplex directed networks (friendship, advice, hierarchy) among 21 managers with organizational attributes.",
+    "tradenets" = "Countries Trade Networks: Five directed networks (trade commodities + diplomacy) among 24 countries with macroeconomic attributes."
   )
-  
-  return(descriptions[[dataset_name]] %||% 
-         "Network dataset for social network analysis. Contains nodes (actors) and edges (relationships) with various attributes.")
+  return(descriptions[[dataset_name]] %||%
+           "Network dataset for social network analysis. Contains nodes (actors) and edges (relationships) with various attributes.")
+}
+
+# ── Comprehensive Dataset Info UI Renderer ────────────────────────────────────
+# Returns a formatted tagList with Background, Network Structure, Attributes,
+# and References sections for the given dataset_key.
+# Used by: onemode chapter "Dataset Info" sub-tabs and Overview's info box.
+render_dataset_info_ui <- function(dataset_key) {
+  meta_list <- list(
+
+    moreno = list(
+      name       = "Moreno Classroom Sociometry",
+      background = paste(
+        "Jacob Moreno's classic sociometric data collected from a classroom of 33 children.",
+        "Moreno is widely credited as the founder of sociometry — the systematic measurement",
+        "of social preferences within groups — and this dataset is among the earliest and most",
+        "cited examples of social network data in the history of the field.",
+        "Edges represent mutual friendship or positive social nominations between students.",
+        "Gender is recorded as a node attribute, enabling analysis of gender-based segregation",
+        "in children's peer networks."
+      ),
+      type       = "One-mode, undirected, binary",
+      directed   = "No",
+      weighted   = "No",
+      domain     = "Developmental Psychology / Sociometry / Classic SNA",
+      objects    = list(
+        list(obj = "moreno", nodes = 33, edges = 46, desc = "Classroom friendship network")
+      ),
+      node_attrs = "vertex.names (student identifier), gender (coded 1 or 2)",
+      edge_attrs = "None",
+      refs       = list(
+        "Moreno, J. L. (1934). Who Shall Survive? Foundations of Sociometry. Nervous and Mental Disease Publishing Company."
+      )
+    ),
+
+    ifm = list(
+      name       = "Padgett Florentine Families \u2014 Marriage Network",
+      background = paste(
+        "The marriage alliance network among 16 prominent Florentine families during the early",
+        "15th century (circa 1430). Collected by John Padgett from historical documents, this",
+        "is one of the most widely used networks in SNA pedagogy. An edge between two families",
+        "indicates at least one recorded marriage alliance. The data capture a pivotal political",
+        "struggle for control of Florence, with the Medici family's strategic bridging ties often",
+        "cited as a key factor in their political rise."
+      ),
+      type       = "One-mode, undirected, binary",
+      directed   = "No",
+      weighted   = "No",
+      domain     = "Historical Sociology / Political Sociology / Classic SNA",
+      objects    = list(
+        list(obj = "ifm", nodes = 16, edges = 20, desc = "Marriage alliance network among Florentine families")
+      ),
+      node_attrs = "vertex.names (family name), wealth (net wealth in 1427, lira), seats (civic council seats 1282\u20131344), ties (total marriage/business ties in 116-family dataset)",
+      edge_attrs = "None",
+      refs       = list(
+        "Breiger, R., & Pattison, P. (1986). Cumulated social roles. Social Networks, 8, 215\u2013256.",
+        "Kent, D. (1978). The Rise of the Medici. Oxford University Press."
+      )
+    ),
+
+    sampson = list(
+      name       = "Sampson Monastery Study",
+      background = paste(
+        "Samuel Sampson collected data on social interactions among novice monks at a New England",
+        "monastery during a period of significant internal conflict. This network reflects positive",
+        "friendship ('liking') ties from the final wave of sociometric rankings (SAMPLK3).",
+        "A political crisis led to expulsions and voluntary departures, making this dataset",
+        "invaluable for studying community structure and faction dynamics.",
+        "Node attributes record each monk's faction: Loyal Opposition, Young Turks, Outcasts, or Waverers."
+      ),
+      type       = "One-mode, undirected, binary",
+      directed   = "No",
+      weighted   = "No",
+      domain     = "Organizational Sociology / Classic SNA / Blockmodeling",
+      objects    = list(
+        list(obj = "sampson", nodes = 18, edges = 60, desc = "Monk friendship network (SAMPLK3, final wave)")
+      ),
+      node_attrs = "vertex.names (monk name), group (faction: Loyal Opposition / Young Turks / Outcasts / Waverers), cloisterville (pre-crisis cohort)",
+      edge_attrs = "None",
+      refs       = list(
+        "Breiger, R., Boorman, S., & Arabie, P. (1975). An algorithm for clustering relational data. Journal of Mathematical Psychology, 12, 328\u2013383.",
+        "Sampson, S. (1969). Crisis in a cloister. Unpublished doctoral dissertation, Cornell University."
+      )
+    ),
+
+    github = list(
+      name       = "GitHub Developer Collaboration Network",
+      background = paste(
+        "Collaboration network among software developers at one large (anonymous) technology",
+        "company, observed through GitHub activity (January 2018 \u2013 February 2021). Two developers",
+        "are linked if they both committed code to at least one common repository. This is a",
+        "one-mode projection of an underlying person-by-repository bipartite network.",
+        "Edge weights reflect the number of shared repositories.",
+        "Not all developers form a single connected component."
+      ),
+      type       = "One-mode, undirected, weighted",
+      directed   = "No",
+      weighted   = "Yes (number of shared repositories)",
+      domain     = "Computational Social Science / Software Engineering / Organizational Networks",
+      objects    = list(
+        list(obj = "github", nodes = 174, edges = 890, desc = "Developer co-contribution network")
+      ),
+      node_attrs = "name (developer identifier, anonymized), component (connected component membership)",
+      edge_attrs = "weight (number of shared repositories)",
+      refs       = list(
+        "Gousios, G., et al. (2014). Lean GHTorrent: GitHub data on demand. MSR 2014, pp. 384\u2013387.",
+        "Middleton, J., et al. (2018). Which contributions predict whether developers are accepted into GitHub teams. MSR 2018, pp. 403\u2013413."
+      )
+    ),
+
+    drugnet = list(
+      name       = "Drug User Social Networks (Hartford, CT)",
+      background = paste(
+        "Social networks among drug users in high-risk sites in Hartford, Connecticut, collected",
+        "as part of a study on how social ties facilitate or inhibit risk behaviors associated",
+        "with drug use and HIV transmission. Directed edges represent social connections reported",
+        "by respondents. Two versions are provided: the full network (drugnet, including isolates)",
+        "and the largest connected component (drug_connect).",
+        "Node attributes capture ethnicity and gender."
+      ),
+      type       = "One-mode, directed, binary",
+      directed   = "Yes",
+      weighted   = "No",
+      domain     = "Public Health / Sociology / Risk Behavior Networks",
+      objects    = list(
+        list(obj = "drugnet",      nodes = 293, edges = 337, desc = "Full network (includes isolates)"),
+        list(obj = "drug_connect", nodes = 193, edges = 323, desc = "Largest connected component")
+      ),
+      node_attrs = "name (respondent identifier), ethnicity (coded 1\u20134), gender (coded numerically)",
+      edge_attrs = "None",
+      refs       = list(
+        "Weeks, M. R., et al. (2002). Social networks of drug users in high-risk sites. AIDS and Behavior, 6(2), 193\u2013206.",
+        "Weeks, M. R., et al. (2009). Changing drug users' risk environments. American Journal of Community Psychology, 43(3), 330\u2013344."
+      )
+    ),
+
+    hi_tech = list(
+      name       = "Krackhardt High-Tech Managers",
+      background = paste(
+        "Three directed relational networks collected from the 21 managers of a high-technology",
+        "equipment manufacturer on the west coast of the United States (mid-1980s).",
+        "The networks capture advice-seeking (hta), friendship nomination (htf), and formal",
+        "reporting (htr) relationships. All share the same node set and attribute table, enabling",
+        "direct comparison of formal and informal organizational structure.",
+        "This multiplex design makes the dataset ideal for studying alignment between formal hierarchy",
+        "and informal networks."
+      ),
+      type       = "Multiplex one-mode, directed (3 networks, shared node set)",
+      directed   = "Yes (all three)",
+      weighted   = "No",
+      domain     = "Organizational Behavior / Management / Multiplex Networks",
+      objects    = list(
+        list(obj = "htf", nodes = 21, edges = 102, desc = "Friendship network"),
+        list(obj = "hta", nodes = 21, edges = 190, desc = "Advice network"),
+        list(obj = "htr", nodes = 21, edges = 20,  desc = "Reports-to (formal hierarchy)")
+      ),
+      node_attrs = "name (manager name), age (years), tenure (years of service), level (1=CEO, 2=VP, 3=Manager), dept (0\u20134)",
+      edge_attrs = "None",
+      refs       = list(
+        "Krackhardt, D. (1987). Cognitive social structures. Social Networks, 9, 104\u2013134.",
+        "Wasserman, S., & Faust, K. (1994). Social Network Analysis: Methods and Applications. Cambridge University Press."
+      )
+    ),
+
+    tradenets = list(
+      name       = "Countries Trade Networks (Wasserman & Faust)",
+      background = paste(
+        "Five directed networks representing economic and diplomatic relations among 24 countries",
+        "(Wasserman & Faust, 1994). Four capture trade commodity flows (manufactured goods, food,",
+        "crude materials, minerals/fuels); a fifth captures diplomatic exchange.",
+        "Data are drawn from international trade statistics for 1965\u20131980.",
+        "A country-level attribute data frame provides macroeconomic context (population growth,",
+        "GNP per capita, school enrollment, energy consumption).",
+        "The manufactured goods network (mg) includes edge weights; all others are binary."
+      ),
+      type       = "Multiplex one-mode, directed (5 networks, shared node set)",
+      directed   = "Yes (all five)",
+      weighted   = "mg only (manufactured goods); others are binary",
+      domain     = "International Relations / World Systems Theory / Multiplex Networks",
+      objects    = list(
+        list(obj = "mg", nodes = 24, edges = 310, desc = "Manufactured Goods \u2014 weighted"),
+        list(obj = "f",  nodes = 24, edges = 307, desc = "Foods"),
+        list(obj = "c",  nodes = 24, edges = 307, desc = "Crude Materials"),
+        list(obj = "m",  nodes = 24, edges = 135, desc = "Minerals & Fuels"),
+        list(obj = "d",  nodes = 24, edges = 369, desc = "Diplomatic Exchange")
+      ),
+      node_attrs = "name (country name)",
+      edge_attrs = "weight (trade volume, mg network only)",
+      refs       = list(
+        "Smith, D., & White, D. (1988). Structure and dynamics of the global economy. Unpublished manuscript.",
+        "Wasserman, S., & Faust, K. (1994). Social Network Analysis: Methods and Applications. Cambridge University Press."
+      )
+    )
+  )
+
+  info <- meta_list[[dataset_key]]
+  if (is.null(info)) {
+    return(p("No dataset information available for the selected dataset."))
+  }
+
+  # Build network objects table rows
+  obj_rows <- lapply(info$objects, function(o) {
+    tags$tr(
+      tags$td(tags$code(o$obj)),
+      tags$td(o$nodes, style = "text-align: center;"),
+      tags$td(o$edges, style = "text-align: center;"),
+      tags$td(o$desc)
+    )
+  })
+
+  tagList(
+    h4(info$name, style = "margin-top: 0; color: #CC0000;"),
+    hr(),
+
+    h5("Background"),
+    p(info$background),
+    hr(),
+
+    h5("Network Structure"),
+    tags$table(
+      class = "table table-condensed",
+      style = "font-size: 13px; margin-bottom: 8px; width: auto;",
+      tags$tbody(
+        tags$tr(tags$td(strong("Type:"),     style = "padding-right: 16px;"), tags$td(info$type)),
+        tags$tr(tags$td(strong("Directed:")), tags$td(info$directed)),
+        tags$tr(tags$td(strong("Weighted:")), tags$td(info$weighted)),
+        tags$tr(tags$td(strong("Domain:")),   tags$td(info$domain))
+      )
+    ),
+    tags$table(
+      class = "table table-condensed table-hover",
+      style = "font-size: 13px;",
+      tags$thead(tags$tr(
+        tags$th("R Object"),
+        tags$th("Nodes", style = "text-align: center;"),
+        tags$th("Edges", style = "text-align: center;"),
+        tags$th("Description")
+      )),
+      tags$tbody(obj_rows)
+    ),
+    hr(),
+
+    h5("Attributes"),
+    tags$ul(
+      tags$li(strong("Node: "), info$node_attrs),
+      tags$li(strong("Edge: "), info$edge_attrs)
+    ),
+    hr(),
+
+    h5("References"),
+    tags$ul(lapply(info$refs, tags$li))
+  )
 }
 
 # Get network basic statistics

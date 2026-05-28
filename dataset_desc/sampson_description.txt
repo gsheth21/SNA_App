@@ -1,0 +1,73 @@
+================================================================================
+DATASET DESCRIPTION: SAMPSON MONASTERY STUDY
+================================================================================
+
+DATASET NAME    : Sampson Monastery Study — Monk Friendship Network
+FILE            : sampson.rda
+R OBJECTS       : sampson (igraph)
+
+--------------------------------------------------------------------------------
+BACKGROUND
+--------------------------------------------------------------------------------
+Samuel Sampson collected data on social interactions among novice monks at a
+New England monastery during a period of significant internal conflict, while
+he was in residence as an experimenter studying vision. The dataset captures
+positive friendship ("liking") ties, derived from the top-3 nominations in the
+final wave of sociometric rankings (SAMPLK3), and has become one of the most
+frequently analyzed networks in social network analysis research and pedagogy.
+
+During Sampson's residence, a political crisis within the monastery led to the
+expulsion of four monks (Nos. 2, 3, 17, and 18 in the Boorman & Breiger coding)
+and the voluntary departure of several others (Nos. 1, 7, 14, 15, and 16). Only
+four monks ultimately remained: Bonaventure, Berthold, Ambrose, and Louis
+(Nos. 5, 6, 9, and 11).
+
+Node attributes record each monk's faction membership (Loyal Opposition,
+Young Turks, Outcasts, or Waverers) and whether they were part of the original
+pre-crisis cohort (cloisterville). These faction labels, developed by Breiger,
+Boorman, and Arabie, are used extensively in the blockmodeling literature.
+
+Most of the present data are retrospective, collected after the breakup occurred. 
+They concern a period during which a new cohort entered the monastery near the end 
+of the study but before the major conflict began. The exceptions are "liking" data 
+gathered at three times: SAMPLK1 to SAMPLK3 - that reflect changes in group sentiment 
+over time (SAMPLK3 was collected in the same wave as the data described below). 
+Information about the senior monks was not included.
+
+DATA COLLECTION : Sociometric rankings collected at three time points (SAMPLK1–3)
+                  during residency at a New England monastery, 1960s.
+                  This network reflects SAMPLK3 (final wave, top-3 nominations).
+DOMAIN          : Organizational Sociology / Classic SNA / Blockmodeling
+
+--------------------------------------------------------------------------------
+NETWORK STRUCTURE
+--------------------------------------------------------------------------------
+NETWORK TYPE    : One-mode, undirected, binary
+DIRECTED        : No
+WEIGHTED        : No
+NODES           : 18 (novice monks)
+EDGES           : 60 ("liking" ties — top-3 friendship nominations)
+
+--------------------------------------------------------------------------------
+ATTRIBUTES
+--------------------------------------------------------------------------------
+NODE ATTRIBUTES : vertex.names  -- Monk name (abbreviated)
+                  group         -- Faction (Loyal Opposition, Young Turks,
+                                  Outcasts, Waverers)
+                  cloisterville -- Pre-crisis cohort membership (logical)
+EDGE ATTRIBUTES : (none)
+
+NETWORK COMPLEXITY : Low (small network; rich substantive context; canonical
+                     teaching and methods benchmark dataset)
+
+--------------------------------------------------------------------------------
+REFERENCES
+--------------------------------------------------------------------------------
+Breiger, R., Boorman, S., & Arabie, P. (1975). An algorithm for clustering
+  relational data with applications to social network analysis and comparison
+  with multidimensional scaling. Journal of Mathematical Psychology, 12, 328–383.
+
+Sampson, S. (1969). Crisis in a cloister. Unpublished doctoral dissertation,
+  Cornell University.
+
+================================================================================

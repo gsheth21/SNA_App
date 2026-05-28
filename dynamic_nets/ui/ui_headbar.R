@@ -35,8 +35,11 @@ create_header <- function() {
           class    = "nav-link",
           `data-tab` = "animation",
           icon("film"), " Animation"
+        ),        tags$a(
+          class    = "nav-link",
+          `data-tab` = "dataset_info",
+          icon("database"), " Dataset Info"
         ),
-
         # ── Module Switcher ──────────────────────────────────
         tags$div(class = "module-divider"),
         tags$div(

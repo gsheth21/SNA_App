@@ -82,6 +82,62 @@ server <- function(input, output, session) {
           )
         )
       ),
+      "dataset_info" = tags$div(
+        id = "tab-dataset_info", class = "tab-inner",
+        fluidRow(
+          box(
+            title       = tagList(icon("database"), " Grime Music Artist-Track Network"),
+            width       = 12,
+            solidHeader = TRUE,
+            status      = "primary",
+            h4("Grime Music Bipartite Network (2008)", style = "margin-top: 0; color: #CC0000;"),
+            hr(),
+            h5("Background"),
+            p("A two-mode (bipartite) network representing the affiliation between artists and songs in the 2008
+              UK grime music corpus. Grime is a genre of electronic music that emerged from London in the early
+              2000s, characterized by dense collaboration networks among artists. Each edge links an artist to
+              a track on which they appeared. This structure is ideal for demonstrating two-mode network analysis:
+              degree and betweenness centrality differ meaningfully across modes, and one-mode projections reveal
+              hidden artist\u2013artist or song\u2013song co-affiliation structures."),
+            hr(),
+            h5("Network Structure"),
+            tags$table(
+              class = "table table-condensed",
+              style = "font-size: 13px; margin-bottom: 8px; width: auto;",
+              tags$tbody(
+                tags$tr(tags$td(strong("Type:"),     style = "padding-right: 16px;"), tags$td("Two-mode (bipartite) network")),
+                tags$tr(tags$td(strong("Directed:")), tags$td("No")),
+                tags$tr(tags$td(strong("Weighted:")), tags$td("No (binary)")),
+                tags$tr(tags$td(strong("Domain:")),   tags$td("Cultural Sociology / Music Studies / Bipartite Networks"))
+              )
+            ),
+            tags$table(
+              class = "table table-condensed table-hover",
+              style = "font-size: 13px;",
+              tags$thead(tags$tr(
+                tags$th("R Object"), tags$th("Dimension", style = "text-align: center;"), tags$th("Description")
+              )),
+              tags$tbody(
+                tags$tr(tags$td(tags$code("artist_track_adj")),  tags$td("372 \u00d7 391", style = "text-align: center;"), tags$td("Adjacency matrix (artists \u00d7 songs)")),
+                tags$tr(tags$td(tags$code("artist_track_edge")), tags$td("1,143 rows",     style = "text-align: center;"), tags$td("Edgelist (artist\u2013song pairs)"))
+              )
+            ),
+            hr(),
+            h5("Node Modes"),
+            tags$ul(
+              tags$li(strong("Mode 1 \u2014 Artists: "), HTML(paste0("<strong>", n_artists, "</strong> nodes (e.g., Wiley, Kano, Scorcher)"))),
+              tags$li(strong("Mode 2 \u2014 Songs: "),   HTML(paste0("<strong>", n_songs, "</strong> nodes")))
+            ),
+            hr(),
+            h5("References"),
+            tags$ul(
+              tags$li("Borgatti, S. P., & Everett, M. G. (1997). Network analysis of 2-mode data. Social Networks, 19(3), 243\u2013269."),
+              tags$li("Breiger, R. L. (1974). The duality of persons and groups. Social Forces, 53(2), 181\u2013190."),
+              tags$li("Everett, M. G., & Borgatti, S. P. (2013). The dual-projection approach for two-mode networks. Social Networks, 35(2), 204\u2013210.")
+            )
+          )
+        )
+      ),
       # Default fallback
       tags$div(id = "tab-edgelist", class = "tab-inner", edgelist_ui)
     )

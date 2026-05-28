@@ -298,6 +298,12 @@ server <- function(input, output, session) {
     )
   })
 
+  # Shared Dataset Info output — reused by all chapter "Dataset Info" sub-tabs.
+  # Safe to share a single output ID because only one chapter is in the DOM at a time.
+  output$chapter_dataset_info <- renderUI({
+    render_dataset_info_ui(input$dataset %||% "ifm")
+  })
+
   rv <- reactiveValues(
     network = NULL,
     igraph = NULL,

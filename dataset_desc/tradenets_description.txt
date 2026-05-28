@@ -1,0 +1,81 @@
+================================================================================
+DATASET DESCRIPTION: COUNTRIES TRADE NETWORKS
+================================================================================
+
+DATASET NAME    : Countries Trade Networks (Wasserman & Faust Sample)
+FILE            : tradenets.rda
+R OBJECTS       : mg (igraph) — Manufactured Goods trade network
+                  f  (igraph) — Foods trade network
+                  c  (igraph) — Crude Materials trade network
+                  m  (igraph) — Minerals & Fuels trade network
+                  d  (igraph) — Diplomatic Exchange network
+                  trade_attr  (data frame) — Country-level attributes
+
+--------------------------------------------------------------------------------
+BACKGROUND
+--------------------------------------------------------------------------------
+This dataset contains five directed network matrices representing economic and
+diplomatic relations among 24 countries, selected by Wasserman and Faust (1994)
+from a larger dataset of 63 countries compiled by Smith and White (1988). The
+selection was designed to be geographically, economically, and politically
+representative of the global system.
+
+Four trade networks capture the flow of different commodity types — manufactured
+goods, food and live animals, crude materials (excluding food), and minerals and
+fuels. A fifth network captures diplomatic exchange (mutual ambassador placement)
+among the same countries. In all networks, a directed tie from country A to
+country B indicates that A exports the relevant commodity to (or exchanges
+diplomats with) B.
+
+An attribute data frame provides macroeconomic context for each country:
+population growth, GNP growth, secondary school enrollment, and energy
+consumption — all measured circa 1970–1981.
+
+Note: The manufactured goods network (mg) contains edge weights; other trade
+networks are binary.
+
+DATA COLLECTION : Smith & White (1988), based on international trade statistics
+                  for the period 1965–1980.
+DOMAIN          : International Relations / World Systems Theory /
+                  Multiplex Network Analysis
+
+--------------------------------------------------------------------------------
+NETWORK STRUCTURE
+--------------------------------------------------------------------------------
+NETWORK TYPE    : Multiplex (five one-mode directed networks, shared node set)
+DIRECTED        : Yes (all five networks)
+WEIGHTED        : mg only (other networks are binary)
+
+  mg (Manufactured Goods)  : 24 nodes | 310 edges | weighted
+  f  (Foods)               : 24 nodes | 307 edges | binary
+  c  (Crude Materials)     : 24 nodes | 307 edges | binary
+  m  (Minerals & Fuels)    : 24 nodes | 135 edges | binary
+  d  (Diplomatic Exchange) : 24 nodes | 369 edges | binary
+
+--------------------------------------------------------------------------------
+ATTRIBUTES
+--------------------------------------------------------------------------------
+NODE ATTRIBUTES (all networks):
+  name        -- Country name
+EDGE ATTRIBUTES:
+  weight      -- Trade volume/value (mg only; other networks have no edge attrs)
+
+COUNTRY ATTRIBUTES (trade_attr data frame):
+  POP_GROWTH  -- Average annual population growth, 1970–1981 (%)
+  GNP         -- Average annual GNP per capita growth, 1970–1981 (%)
+  SCHOOLS     -- Secondary school enrollment ratio, 1981
+  ENERGY      -- Energy consumption per capita, 1981 (kg coal equivalent)
+
+NETWORK COMPLEXITY : Moderate-High (multiplex; directed; cross-domain comparison
+                     of trade and diplomacy; macroeconomic covariates)
+
+--------------------------------------------------------------------------------
+REFERENCES
+--------------------------------------------------------------------------------
+Smith, D., & White, D. (1988). Structure and dynamics of the global economy:
+  Network analysis of international trade 1965–1980. Unpublished manuscript.
+
+Wasserman, S., & Faust, K. (1994). Social Network Analysis: Methods and
+  Applications. Cambridge University Press.
+
+================================================================================

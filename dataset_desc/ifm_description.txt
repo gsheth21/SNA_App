@@ -1,0 +1,65 @@
+================================================================================
+DATASET DESCRIPTION: PADGETT FLORENTINE FAMILIES — MARRIAGE NETWORK
+================================================================================
+
+DATASET NAME    : Padgett Florentine Families — Intermarriage Network
+FILE            : ifm.rda
+R OBJECTS       : ifm (igraph)
+
+--------------------------------------------------------------------------------
+BACKGROUND
+--------------------------------------------------------------------------------
+This dataset captures the marriage alliance network among 16 prominent
+Florentine families during the early 15th century (circa 1430). The data were
+collected by John Padgett from historical documents and have become one of the
+most widely used networks in social network analysis pedagogy and research.
+
+Nodes represent family aggregates (not individuals); an edge between two families
+indicates that they were linked by at least one recorded marriage alliance. The
+network is symmetric — if Family A married into Family B, the tie is undirected.
+
+Substantively, the data capture a pivotal political struggle for control of
+Florence, with two dominant factions: one centered on the Medici family (node 9)
+and one on the Strozzi family (node 15). The Medici's strategic use of marriage
+ties — including bridging across otherwise disconnected families — is often cited
+as a key factor in their political rise.
+
+Node attributes provide economic and political context: net wealth (1427),
+civic council seats held (1282–1344), and total marriage/business ties across
+the broader dataset of 116 families.
+
+DATA COLLECTION : Historical documents; Renaissance Florence, circa 1430.
+                  Data collected and coded by John Padgett.
+DOMAIN          : Historical Sociology / Political Sociology / Classic SNA
+
+--------------------------------------------------------------------------------
+NETWORK STRUCTURE
+--------------------------------------------------------------------------------
+NETWORK TYPE    : One-mode, undirected, binary
+DIRECTED        : No
+WEIGHTED        : No
+NODES           : 16 (Florentine family aggregates)
+EDGES           : 20 (marriage alliance ties)
+
+--------------------------------------------------------------------------------
+ATTRIBUTES
+--------------------------------------------------------------------------------
+NODE ATTRIBUTES : vertex.names -- Family name
+                  wealth       -- Net wealth in 1427 (thousands of lira)
+                  seats        -- Priorates (civic council seats) held 1282–1344
+                  ties         -- Total marriage/business ties in 116-family dataset
+EDGE ATTRIBUTES : (none)
+
+NETWORK COMPLEXITY : Low (very small, sparse network; ideal for teaching
+                     core SNA concepts with historical richness)
+
+--------------------------------------------------------------------------------
+REFERENCES
+--------------------------------------------------------------------------------
+Breiger, R., & Pattison, P. (1986). Cumulated social roles: The duality of
+  persons and their algebras. Social Networks, 8, 215–256.
+
+Kent, D. (1978). The Rise of the Medici: Faction in Florence, 1426–1434.
+  Oxford University Press.
+
+================================================================================

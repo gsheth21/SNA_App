@@ -1,0 +1,50 @@
+================================================================================
+DATASET DESCRIPTION: BALI TERRORIST NETWORK
+================================================================================
+
+DATASET NAME    : Bali Terrorist Network
+FILE            : bali.rda
+R OBJECTS       : bali (igraph)
+
+--------------------------------------------------------------------------------
+BACKGROUND
+--------------------------------------------------------------------------------
+This dataset captures the social network underlying the 2002 Bali bombings, one
+of the deadliest terrorist attacks in Southeast Asian history. Nodes represent
+individuals connected to the attack, and edges reflect documented social ties
+among them. Roles are coded to distinguish participants by function within the
+network: Command Team (CT), Bomb Maker (BM), Suicide Bomber (SB), Operations
+Assistant (OA), and Team Leader (TL). The network is particularly useful for
+studying how covert organizations structure themselves and how role specialization
+relates to network position.
+
+DATA COLLECTION : Reconstructed from investigative and journalistic sources
+                  following the October 2002 Bali bombings.
+DOMAIN          : Terrorism / Security Studies / Dark Networks
+
+--------------------------------------------------------------------------------
+NETWORK STRUCTURE
+--------------------------------------------------------------------------------
+NETWORK TYPE    : One-mode, undirected
+DIRECTED        : No
+WEIGHTED        : No
+NODES           : 17 (individuals involved in the attack)
+EDGES           : 63 (documented social ties between individuals)
+
+--------------------------------------------------------------------------------
+ATTRIBUTES
+--------------------------------------------------------------------------------
+NODE ATTRIBUTES : role         -- Role in the attack (CT, OA, BM, SB, TL)
+                  vertex.names -- Individual identifiers
+EDGE ATTRIBUTES : IC           -- Interaction context (numeric code)
+
+NETWORK COMPLEXITY : Low (small network; useful for teaching and illustration)
+
+--------------------------------------------------------------------------------
+REFERENCES
+--------------------------------------------------------------------------------
+Koschade, S. (2006). A social network analysis of Jemaah Islamiyah: The
+  applications to counterterrorism and intelligence. Studies in Conflict &
+  Terrorism, 29(6), 559–575.
+
+================================================================================

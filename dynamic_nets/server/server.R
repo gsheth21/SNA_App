@@ -17,6 +17,64 @@ server <- function(input, output, session) {
       snapshots = tab_snapshots,
       multitime = tab_multitime,
       animation = tab_animation,
+      dataset_info = tags$div(
+        id = "tab-dataset_info", class = "tab-inner",
+        fluidRow(
+          box(
+            title       = tagList(icon("database"), " Fraternity Social Networks (Longitudinal)"),
+            width       = 12,
+            solidHeader = TRUE,
+            status      = "primary",
+            h4("Newcomb's College Fraternity Longitudinal Networks", style = "margin-top: 0; color: #CC0000;"),
+            hr(),
+            h5("Background"),
+            p("Theodore Newcomb's classic longitudinal study tracked social preferences among 17 members of a small
+              college fraternity throughout a single academic year (1950s). Each week, members ranked their peers on
+              who they \u201cliked most.\u201d These rankings were converted into directed sociometric networks by retaining
+              each member's top choices as edges. The data captures the formation and stabilization of friendship
+              structures over time, making it a foundational dataset for dynamic network analysis and social influence research."),
+            p("Wave frat9 is absent from the original data; all other weekly snapshots (frat0\u2013frat15) are included."),
+            hr(),
+            h5("Network Structure"),
+            tags$table(
+              class = "table table-condensed",
+              style = "font-size: 13px; margin-bottom: 8px; width: auto;",
+              tags$tbody(
+                tags$tr(tags$td(strong("Type:"),      style = "padding-right: 16px;"), tags$td("Longitudinal one-mode network")),
+                tags$tr(tags$td(strong("Directed:")), tags$td("Yes")),
+                tags$tr(tags$td(strong("Weighted:")), tags$td("No (binary)")),
+                tags$tr(tags$td(strong("Waves:")),    tags$td("15 weekly observations (frat0 \u2013 frat15, excluding frat9)")),
+                tags$tr(tags$td(strong("Domain:")),   tags$td("Social Psychology / Small Group Dynamics / Longitudinal SNA"))
+              )
+            ),
+            tags$table(
+              class = "table table-condensed table-hover",
+              style = "font-size: 13px;",
+              tags$thead(tags$tr(
+                tags$th("R Object"), tags$th("Value", style = "text-align: center;"), tags$th("Description")
+              )),
+              tags$tbody(
+                tags$tr(tags$td(tags$code("frat_n")),     tags$td("list of 15",    style = "text-align: center;"), tags$td("Directed network objects, one per wave")),
+                tags$tr(tags$td("Nodes per wave"),        tags$td("17",            style = "text-align: center;"), tags$td("Fraternity members (labeled X1\u2013X17)")),
+                tags$tr(tags$td("Edges per wave (avg.)"), tags$td("\u224851 edges", style = "text-align: center;"), tags$td("Directed friendship nominations"))
+              )
+            ),
+            hr(),
+            h5("Attributes"),
+            tags$ul(
+              tags$li(strong("Node: "), "name (X1\u2013X17, anonymized member identifier)"),
+              tags$li(strong("Edge: "), "None (binary)")
+            ),
+            hr(),
+            h5("References"),
+            tags$ul(
+              tags$li("Newcomb, T. M. (1961). The Acquaintance Process. Holt, Rinehart & Winston."),
+              tags$li("Nordlie, P. G. (1958). A longitudinal study of interpersonal attraction in a natural group setting. Unpublished doctoral dissertation, University of Michigan."),
+              tags$li("Wasserman, S., & Faust, K. (1994). Social Network Analysis: Methods and Applications. Cambridge University Press.")
+            )
+          )
+        )
+      ),
       tab_stats   # default fallback
     )
   })

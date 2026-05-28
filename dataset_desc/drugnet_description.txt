@@ -1,0 +1,68 @@
+================================================================================
+DATASET DESCRIPTION: DRUG USER SOCIAL NETWORKS
+================================================================================
+
+DATASET NAME    : Drug User Social Networks (Hartford, CT)
+FILE            : drugnet.rda
+R OBJECTS       : drugnet (igraph), drug_connect (igraph)
+
+--------------------------------------------------------------------------------
+BACKGROUND
+--------------------------------------------------------------------------------
+This dataset captures social networks among drug users in high-risk sites in
+Hartford, Connecticut, collected as part of a study examining how social ties
+facilitate or inhibit risk behaviors associated with drug use and HIV transmission.
+Nodes are individuals; directed edges represent social connections reported by
+respondents. Two versions of the network are provided:
+
+  drugnet      -- Full network (293 nodes, 337 edges), including isolates and
+                  those with limited connections. Represents the broader social
+                  field in which drug use occurs.
+  drug_connect -- Connected subgraph (193 nodes, 323 edges), retaining only
+                  the reachable component. Better suited for most network
+                  analyses that require connectivity.
+
+Node attributes capture ethnicity and gender, enabling demographic analysis of
+network structure and risk exposure.
+
+DATA COLLECTION : Ethnographic field research and structured interviews;
+                  Hartford, Connecticut, late 1990s/early 2000s.
+DOMAIN          : Public Health / Sociology / Risk Behavior Networks
+
+--------------------------------------------------------------------------------
+NETWORK STRUCTURE
+--------------------------------------------------------------------------------
+NETWORK TYPE    : One-mode, directed
+DIRECTED        : Yes
+WEIGHTED        : No
+
+  drugnet       : 293 nodes | 337 edges
+  drug_connect  : 193 nodes | 323 edges
+
+--------------------------------------------------------------------------------
+ATTRIBUTES
+--------------------------------------------------------------------------------
+NODE ATTRIBUTES : name      -- Respondent identifier
+                  ethnicity -- Ethnicity (coded numerically: 1–4)
+                  gender    -- Gender (coded numerically)
+EDGE ATTRIBUTES : (none)
+
+NOTE: Use drug_connect for connectivity-dependent analyses (e.g., shortest
+paths, reachability). Use drugnet to study the full social field including
+peripheral actors.
+
+NETWORK COMPLEXITY : Moderate (medium-sized; directed; demographic attributes)
+
+--------------------------------------------------------------------------------
+REFERENCES
+--------------------------------------------------------------------------------
+Weeks, M. R., Clair, S., Borgatti, S. P., Radda, K., & Schensul, J. J. (2002).
+  Social networks of drug users in high-risk sites: Finding the connections.
+  AIDS and Behavior, 6(2), 193–206.
+
+Weeks, M. R., Convey, M., Dickson-Gomez, J., Li, J., Radda, K., Martinez, M.,
+  & Robles, E. (2009). Changing drug users' risk environments: Peer health
+  advocates as multi-level community change agents. American Journal of
+  Community Psychology, 43(3), 330–344.
+
+================================================================================

@@ -24,6 +24,12 @@ create_header <- function() {
         ),
         tags$a(
           class = "nav-link",
+          `data-tab` = "dataset_info",
+          icon("database"),
+          "Dataset Info"
+        ),
+        tags$a(
+          class = "nav-link",
           `data-tab` = "about",
           icon("info-circle"),
           "About"
