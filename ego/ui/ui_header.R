@@ -33,6 +33,41 @@ create_header <- function() {
           `data-tab` = "help",
           icon("question-circle"),
           "Help"
+        ),
+
+        # ── Module Switcher ──────────────────────────────────
+        tags$div(class = "module-divider"),
+        tags$div(
+          class = "module-switcher",
+          tags$a(
+            class = "module-btn",
+            href  = "#",
+            icon("th-large"), " Apps ▾"
+          ),
+          tags$div(
+            class = "module-dropdown",
+            tags$a(
+              href = Sys.getenv("ONEMODE"),
+              icon("circle"), "One-Mode Networks"
+            ),
+            tags$a(
+              href = Sys.getenv("TWOMODE"),
+              icon("th"), "Two-Mode Networks"
+            ),
+            tags$a(
+              href = Sys.getenv("TEXTMODE"),
+              icon("font"), "Text Networks"
+            ),
+            tags$a(
+              href  = Sys.getenv("EGOMODE"),
+              class = "current-module",
+              icon("user"), "Ego Networks"
+            ),
+            tags$a(
+              href = Sys.getenv("DYNAMICMODE"),
+              icon("play-circle"), "Dynamic Nets"
+            )
+          )
         )
       )
     )

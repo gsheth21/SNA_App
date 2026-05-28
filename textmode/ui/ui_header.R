@@ -57,6 +57,41 @@ create_header <- function() {
           `data-tab` = "about",
           icon("info-circle"),
           "About"
+        ),
+
+        # ── Module Switcher ──────────────────────────────────
+        tags$div(class = "module-divider"),
+        tags$div(
+          class = "module-switcher",
+          tags$a(
+            class = "module-btn",
+            href  = "#",
+            icon("th-large"), " Apps ▾"
+          ),
+          tags$div(
+            class = "module-dropdown",
+            tags$a(
+              href = Sys.getenv("ONEMODE"),
+              icon("circle"), "One-Mode Networks"
+            ),
+            tags$a(
+              href = Sys.getenv("TWOMODE"),
+              icon("th"), "Two-Mode Networks"
+            ),
+            tags$a(
+              href  = Sys.getenv("TEXTMODE"),
+              class = "current-module",
+              icon("font"), "Text Networks"
+            ),
+            tags$a(
+              href = Sys.getenv("EGOMODE"),
+              icon("user"), "Ego Networks"
+            ),
+            tags$a(
+              href = Sys.getenv("DYNAMICMODE"),
+              icon("play-circle"), "Dynamic Nets"
+            )
+          )
         )
       )
     )

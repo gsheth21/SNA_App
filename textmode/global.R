@@ -23,6 +23,9 @@ library(scales)
 
 library(here)
 
+# Load environment variables
+readRenviron(here::here(".env"))
+
 # Options
 options(shiny.maxRequestSize = 30 * 1024^2)
 options(warn = -1)

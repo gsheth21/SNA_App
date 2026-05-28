@@ -35,6 +35,41 @@ create_header <- function() {
           class    = "nav-link",
           `data-tab` = "animation",
           icon("film"), " Animation"
+        ),
+
+        # ── Module Switcher ──────────────────────────────────
+        tags$div(class = "module-divider"),
+        tags$div(
+          class = "module-switcher",
+          tags$a(
+            class = "module-btn",
+            href  = "#",
+            icon("th-large"), " Apps ▾"
+          ),
+          tags$div(
+            class = "module-dropdown",
+            tags$a(
+              href = Sys.getenv("ONEMODE"),
+              icon("circle"), "One-Mode Networks"
+            ),
+            tags$a(
+              href = Sys.getenv("TWOMODE"),
+              icon("th"), "Two-Mode Networks"
+            ),
+            tags$a(
+              href = Sys.getenv("TEXTMODE"),
+              icon("font"), "Text Networks"
+            ),
+            tags$a(
+              href = Sys.getenv("EGOMODE"),
+              icon("user"), "Ego Networks"
+            ),
+            tags$a(
+              href  = Sys.getenv("DYNAMICMODE"),
+              class = "current-module",
+              icon("play-circle"), "Dynamic Nets"
+            )
+          )
         )
       )
     )

@@ -16,6 +16,9 @@ library(htmltools)
 
 library(here)
 
+# Load environment variables
+readRenviron(here::here(".env"))
+
 options(shiny.maxRequestSize = 30 * 1024^2)
 
 `%||%` <- function(a, b) if (is.null(a)) b else a

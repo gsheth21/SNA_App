@@ -78,6 +78,89 @@ body, html {
     font-weight: bold;
 }
 
+/* Module Switcher Dropdown */
+.module-divider {
+    width: 1px;
+    height: 28px;
+    background-color: rgba(255, 255, 255, 0.25);
+    margin: 0 10px;
+    flex-shrink: 0;
+    align-self: center;
+}
+.module-switcher {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    margin-left: 4px;
+    /* extend hover zone below button to bridge the gap */
+    padding-bottom: 6px;
+    margin-bottom: -6px;
+}
+.module-switcher .module-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 14px;
+    white-space: nowrap;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: transparent;
+    font-weight: bold;
+    letter-spacing: 0.3px;
+}
+.module-switcher .module-btn:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.5);
+    text-decoration: none;
+}
+.module-switcher .module-dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background-color: #1a1a1a;
+    min-width: 190px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+    border-radius: 6px;
+    z-index: 9999;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.module-switcher:hover .module-dropdown {
+    display: block;
+}
+.module-switcher .module-dropdown a {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px 16px;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    font-size: 13px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    transition: background-color 0.15s;
+}
+.module-switcher .module-dropdown a:last-child {
+    border-bottom: none;
+}
+.module-switcher .module-dropdown a:hover {
+    background-color: #CC0000;
+    color: #ffffff;
+    text-decoration: none;
+}
+.module-switcher .module-dropdown a.current-module {
+    background-color: rgba(204, 0, 0, 0.25);
+    color: #ffffff;
+    font-weight: bold;
+    pointer-events: none;
+    cursor: default;
+}
+
 /* Sidebar */
 .main-sidebar {
     position: fixed !important;
