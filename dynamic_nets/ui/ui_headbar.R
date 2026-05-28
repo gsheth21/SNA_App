@@ -19,26 +19,26 @@ create_header <- function() {
         tags$a(
           class    = "nav-link active",
           `data-tab` = "stats",
-          icon("chart-line"), " Statistics"
+          tags$i(class = "fas fa-chart-line", "aria-hidden" = "true"), " Statistics"
         ),
         tags$a(
           class    = "nav-link",
           `data-tab` = "snapshots",
-          icon("camera"), " Snapshots"
+          tags$i(class = "fas fa-camera", "aria-hidden" = "true"), " Snapshots"
         ),
         tags$a(
           class    = "nav-link",
           `data-tab` = "multitime",
-          icon("layer-group"), " Multi-Time"
+          tags$i(class = "fas fa-layer-group", "aria-hidden" = "true"), " Multi-Time"
         ),
         tags$a(
           class    = "nav-link",
           `data-tab` = "animation",
-          icon("film"), " Animation"
+          tags$i(class = "fas fa-film", "aria-hidden" = "true"), " Animation"
         ),        tags$a(
           class    = "nav-link",
           `data-tab` = "dataset_info",
-          icon("database"), " Dataset Info"
+          tags$i(class = "fas fa-database", "aria-hidden" = "true"), " Dataset Info"
         ),
         # ── Module Switcher ──────────────────────────────────
         tags$div(class = "module-divider"),

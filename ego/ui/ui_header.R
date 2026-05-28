@@ -8,7 +8,8 @@ create_header <- function() {
         actionButton(
           "sidebar-toggle-button",
           icon = icon("bars"),
-          label = NULL
+          label = NULL,
+          `aria-label` = "Toggle navigation sidebar"
         ),
         tags$a(
           class = "nav-link active",

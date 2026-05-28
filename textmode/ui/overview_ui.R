@@ -85,7 +85,7 @@ overview_ui <- tagList(
       fluidRow(
         column(3,
           tags$div(class = "workflow-step",
-            tags$h5("Step 1–2", style = "color: #CC0000;"),
+            tags$h4("Step 1–2", style = "color: #CC0000;"),
             tags$p(strong("Load & Sentence-Split")),
             tags$p("The text is divided into sentences — the unit of co-occurrence context.",
                    style = "font-size: 12px;")
@@ -93,7 +93,7 @@ overview_ui <- tagList(
         ),
         column(3,
           tags$div(class = "workflow-step",
-            tags$h5("Step 3–4", style = "color: #CC0000;"),
+            tags$h4("Step 3–4", style = "color: #CC0000;"),
             tags$p(strong("Tokenize & Clean")),
             tags$p("Words are extracted and stopwords are removed, leaving content terms.",
                    style = "font-size: 12px;")
@@ -101,7 +101,7 @@ overview_ui <- tagList(
         ),
         column(3,
           tags$div(class = "workflow-step",
-            tags$h5("Step 5–7", style = "color: #CC0000;"),
+            tags$h4("Step 5–7", style = "color: #CC0000;"),
             tags$p(strong("Count Pairs → Graph")),
             tags$p("Word pairs that co-occur are counted and converted to an igraph object.",
                    style = "font-size: 12px;")
@@ -109,7 +109,7 @@ overview_ui <- tagList(
         ),
         column(3,
           tags$div(class = "workflow-step",
-            tags$h5("Step 8–10", style = "color: #CC0000;"),
+            tags$h4("Step 8–10", style = "color: #CC0000;"),
             tags$p(strong("Centrality & Clusters")),
             tags$p("Central words are identified and semantic communities are detected.",
                    style = "font-size: 12px;")

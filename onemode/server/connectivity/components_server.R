@@ -94,6 +94,9 @@ components <- function(input, output, session, rv, g, components_result, vis_bas
     
     df <- df[order(df$Component, df$Node), ]
     
-    datatable(df, options = list(pageLength = 10, scrollX = TRUE))
+    datatable(df,
+      rownames = FALSE,
+      options = list(pageLength = 10, scrollX = TRUE)
+    )
   })
 }

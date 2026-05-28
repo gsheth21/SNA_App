@@ -5,8 +5,8 @@ create_sidebar <- function() {
     # App title block
     tags$div(
       style = "padding: 12px 15px 8px;",
-      tags$h3(
-        style = "color: #ffffff; margin: 0 0 3px 0; font-weight: bold;",
+      tags$h1(
+        style = "color: #ffffff; margin: 0 0 3px 0; font-weight: bold; font-size: 1.17em;",
         "Dynamic Networks"
       ),
       tags$small(

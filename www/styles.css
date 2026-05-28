@@ -60,7 +60,7 @@ body, html {
     align-items: center;
     gap: 5px;
     padding: 8px 15px;
-    color: rgba(255, 255, 255, 0.8);
+    color: #ffffff;
     text-decoration: none;
     border-radius: 5px;
     font-size: 14px;
@@ -303,3 +303,53 @@ section.sidebar .shiny-input-container {
     background-color: #CC0000 !important;
     color: #ffffff;
 }
+
+/* Accessibility: darken .bg-red stat boxes so white text meets WCAG AA 4.5:1 contrast */
+.small-box.bg-red {
+    background-color: #b71c1c !important;
+}
+.small-box.bg-red:hover {
+    background-color: #9b1515 !important;
+}
+
+/* ── Accessibility fixes ──────────────────────────────────────────────────── */
+
+/* Visually hidden utility: readable by screen readers, invisible on screen */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* color-contrast – primary action buttons:
+   Shiny adds .btn-default (color:#444) over .btn-primary (bg:#3c8dbc).
+   #444 on #3c8dbc = 2.65:1 (FAIL). Black on #3c8dbc = 5.73:1 (PASS WCAG AA). */
+.btn.btn-primary,
+.btn.btn-primary:hover,
+.btn.btn-primary:focus,
+.btn.btn-primary:active {
+    color: #000000 !important;
+}
+
+/* color-contrast – inactive tab links:
+   shinydashboard uses #3c8dbc on white = 3.66:1 (FAIL).
+   #0d6090 on white ≈ 6.5:1 (PASS WCAG AA). */
+.nav-tabs > li > a,
+.nav-tabs > li > a:link,
+.nav-tabs > li > a:visited {
+    color: #0d6090 !important;
+}
+
+/* color-contrast – #888 inline hint/caption text:
+   #888 on white = 3.54:1 (FAIL). #595959 on white = 7.0:1 (PASS WCAG AA).
+   Catches all inline style="color: #888" occurrences across all apps. */
+[style*="color: #888"] {
+    color: #595959 !important;
+}
+

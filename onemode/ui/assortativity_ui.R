@@ -22,12 +22,12 @@ assortativity_ui <- tagList(
           
           hr(),
           
-          h5("Degree Assortativity Coefficient:"),
+          h4("Degree Assortativity Coefficient:"),
           uiOutput("degree_assort_result"),
           
           hr(),
           
-          h5("Interpretation Guide:"),
+          h4("Interpretation Guide:"),
           tags$ul(
             tags$li("Values range from -1 to +1"),
             tags$li("Positive values: similar nodes tend to connect (homophilic)"),
@@ -83,7 +83,7 @@ assortativity_ui <- tagList(
           
           hr(),
           
-          h5("Results:"),
+          h4("Results:"),
           uiOutput("attr_assort_result")
         )
       ),

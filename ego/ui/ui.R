@@ -23,9 +23,13 @@ ui <- dashboardPage(
     
     # Custom CSS and JavaScript
     tags$head(
+      tags$title("Ego Network Analysis"),
       includeCSS(here::here("www", "styles.css")),
       includeScript(here::here("www", "script.js"))
     ),
+
+    # Visually hidden h1 for screen readers (page-has-heading-one)
+    tags$h1("Ego Network Analysis", class = "sr-only"),
 
     uiOutput("tab_content")
   )

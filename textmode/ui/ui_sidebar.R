@@ -36,7 +36,7 @@ create_sidebar <- function() {
           "Comma or newline separated words to remove (in addition to standard stopwords)."),
         textAreaInput(
           "extra_stops",
-          label   = NULL,
+          label   = tags$span("Extra stopwords", class = "sr-only"),
           value   = paste(default_custom_stops, collapse = ", "),
           rows    = 3,
           resize  = "none",
@@ -58,7 +58,7 @@ create_sidebar <- function() {
       div(style = "padding-left: 15px; padding-right: 15px;",
         sliderInput(
           "n_pairs",
-          label = NULL,
+          label = tags$span("Top N pairs", class = "sr-only"),
           min   = 10,
           max   = 100,
           value = 50,
@@ -80,7 +80,7 @@ create_sidebar <- function() {
       div(style = "padding-left: 15px;",
         selectInput(
           "layout",
-          NULL,
+          tags$span("Layout algorithm", class = "sr-only"),
           choices = c(
             "Fruchterman-Reingold" = "fr",
             "Kamada-Kawai"         = "kk",

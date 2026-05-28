@@ -103,25 +103,25 @@ server <- function(input, output, session) {
   output$stat_density <- renderValueBox({
     t   <- input$time_point %||% 1
     val <- round(net_stats$density[t], 3)
-    valueBox(val, paste("Density  ·  T", t), icon = icon("circle-nodes"), color = "red")
+    valueBox(val, paste("Density  ·  T", t), icon = tags$i(class = "fas fa-circle-nodes", "aria-hidden" = "true"), color = "red")
   })
 
   output$stat_transitivity <- renderValueBox({
     t   <- input$time_point %||% 1
     val <- round(net_stats$transitivity[t], 3)
-    valueBox(val, paste("Transitivity  ·  T", t), icon = icon("triangle-exclamation"), color = "black")
+    valueBox(val, paste("Transitivity  ·  T", t), icon = tags$i(class = "fas fa-triangle-exclamation", "aria-hidden" = "true"), color = "black")
   })
 
   output$stat_reciprocity <- renderValueBox({
     t   <- input$time_point %||% 1
     val <- round(net_stats$reciprocity[t], 3)
-    valueBox(val, paste("Reciprocity  ·  T", t), icon = icon("arrows-left-right"), color = "red")
+    valueBox(val, paste("Reciprocity  ·  T", t), icon = tags$i(class = "fas fa-arrows-left-right", "aria-hidden" = "true"), color = "red")
   })
 
   output$stat_edges <- renderValueBox({
     t   <- input$time_point %||% 1
     val <- net_stats$e_count[t]
-    valueBox(val, paste("Active Edges  ·  T", t), icon = icon("diagram-project"), color = "black")
+    valueBox(val, paste("Active Edges  ·  T", t), icon = tags$i(class = "fas fa-diagram-project", "aria-hidden" = "true"), color = "black")
   })
 
   output$stats_lineplot <- renderPlot({

@@ -16,7 +16,7 @@ adjmatrix_server <- function(input, output, session, rv) {
         pageLength = 10,
         dom        = "t"
       ),
-      rownames = TRUE
+      rownames = "Artist"
     )
   })
 

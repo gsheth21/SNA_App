@@ -20,9 +20,14 @@ ui <- dashboardPage(
   body = dashboardBody(
     useShinyjs(),
     tags$head(
+      tags$title("Two-Mode Network Analysis"),
       includeCSS(here::here("www", "styles.css")),
       includeScript(here::here("www", "script.js"))
     ),
+
+    # Visually hidden h1 for screen readers (page-has-heading-one)
+    tags$h1("Two-Mode Network Analysis", class = "sr-only"),
+
     uiOutput("tab_content")
   )
 )

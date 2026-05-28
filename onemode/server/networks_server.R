@@ -63,7 +63,7 @@ networks_server <- function(input, output, session, rv) {
         label,
         style = paste0(
           "background-color:", badge_color, ";",
-          "color: white;",
+          "color: #000000;",
           "padding: 6px 14px;",
           "border-radius: 12px;",
           "font-size: 1.1em;",
@@ -110,7 +110,7 @@ networks_server <- function(input, output, session, rv) {
         tags$span(
           icon("check-circle"),
           " No loops detected.",
-          style = "color: #5cb85c; font-weight: bold;"
+          style = "color: #2d7a2d; font-weight: bold;"
         )
       )
     }
@@ -160,10 +160,10 @@ networks_server <- function(input, output, session, rv) {
         tags$li(tags$b("Nodes: "), n),
         tags$li(tags$b("Edges: "), e),
         tags$li(tags$b("Possible Edges: "), possible,
-                tags$small(paste0(" (", formula, ")"), style = "color: #888;")),
+                tags$small(paste0(" (", formula, ")"), style = "color: #595959;")),
         tags$li(tags$b("Density: "),
                 tags$span(den, style = "color: #CC0000; font-weight: bold;"),
-                tags$small(paste0(" (", e, "/", possible, ")"), style = "color: #888;"))
+                tags$small(paste0(" (", e, "/", possible, ")"), style = "color: #595959;"))
       )
     )
   })
@@ -180,7 +180,7 @@ networks_server <- function(input, output, session, rv) {
     iso_names <- all_names[iso_idx]
 
     if (n_iso == 0) {
-      tags$span(icon("check-circle"), " No isolates.", style = "color: #5cb85c;")
+      tags$span(icon("check-circle"), " No isolates.", style = "color: #2d7a2d;")
     } else {
       tagList(
         tags$b(paste(n_iso, "isolate(s)")),
@@ -212,7 +212,7 @@ networks_server <- function(input, output, session, rv) {
     pen_names <- all_names[pen_idx]
 
     if (n_pen == 0) {
-      tags$span(icon("check-circle"), " No pendants.", style = "color: #5cb85c;")
+      tags$span(icon("check-circle"), " No pendants.", style = "color: #2d7a2d;")
     } else {
       tagList(
         tags$b(paste(n_pen, "pendant(s)")),

@@ -54,7 +54,7 @@ create_sidebar <- function() {
       div(style = "padding-left: 15px;",
         selectInput(
           "layout",
-          NULL,
+          tags$span("Layout Algorithm", class = "sr-only"),
           choices = c(
             "Davidson-Harel"       = "dh",
             "Fruchterman-Reingold" = "fr",

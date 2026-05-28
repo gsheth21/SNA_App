@@ -12,7 +12,14 @@ ui <- dashboardPage(
 
     tags$head(
       includeCSS(here::here("www", "styles.css")),
-      includeScript(here::here("www", "script.js"))
+      includeScript(here::here("www", "script.js")),
+      tags$script(HTML('
+        document.addEventListener("DOMContentLoaded", function() {
+          document.documentElement.setAttribute("lang", "en");
+          var cw = document.querySelector(".content-wrapper");
+          if (cw) cw.setAttribute("role", "main");
+        });
+      '))
     ),
 
     uiOutput("tab_content")
